@@ -12,8 +12,8 @@ import (
 )
 
 func getToken() string {
-	apiUrl := "https://data-hub.eglobalmark.com"
-	resource := "/auth/realms/datahub/protocol/openid-connect/token"
+	apiUrl := "sso.eglobalmark.com"
+	resource := "/auth/realms/stellio/protocol/openid-connect/token"
 	data := url.Values{}
 	data.Set("client_id", "jenkins-integration")
 	data.Set("client_secret", "8c79cec3-db58-47fc-9c84-24296b26cee8")
@@ -57,7 +57,7 @@ func getToken() string {
 func getEntityById(entity string, token string) Apiary {
 
 	bToken := "Bearer " + token
-	apiUrl := "https://data-hub.eglobalmark.com"
+	apiUrl := "sso.eglobalmark.com"
 	resource := "/ngsi-ld/v1/entities/" + entity
 
 	u, _ := url.ParseRequestURI(apiUrl)
