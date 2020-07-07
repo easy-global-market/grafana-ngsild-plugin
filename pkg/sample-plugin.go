@@ -3,13 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
@@ -105,7 +100,9 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	//entityID demandé
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 
-	//getEntityById(qm.QueryText, token)
+	entity := getEntityById(qm.QueryText, token)
+	log.DefaultLogger.Info("NAME.Value ", "request", string(entity.Name.Value))
+
 	// create data frame response
 	//frame := data.NewFrame("response")
 	frame := data.NewFrame(qm.QueryText)
@@ -116,11 +113,12 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	//)
 
 	frame.Fields = append(frame.Fields,
-		//data.NewField("log", nil, []string{"test", "test2"}),
-		data.NewField(qm.QueryText, nil, []string{"name", "createdAt", "Apiary"}),
+		data.NewField(qm.QueryText, nil, []string{"type : ", "createdAt", "name"}),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("value", nil, []string{entity.Type, entity.CreatedAt, entity.Name.Value}),
 	)
 
-	// add values
 	// frame.Fields = append(frame.Fields,
 	// 	data.NewField("values", nil, []int64{5, 10}),
 	// )
@@ -162,101 +160,4 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 func (s *instanceSettings) Dispose() {
 	// Called before creatinga a new instance to allow plugin authors
 	// to cleanup.
-}
-
-func getToken() string {
-	apiUrl := "https://data-hub.eglobalmark.com"
-	resource := "/auth/realms/datahub/protocol/openid-connect/token"
-	data := url.Values{}
-	data.Set("client_id", "stelliograf")
-	data.Set("client_secret", "412fff7a-a618-4313-a342-1b844d845b45")
-	data.Set("grant_type", "client_credentials")
-
-	u, _ := url.ParseRequestURI(apiUrl)
-	u.Path = resource
-	urlStr := u.String()
-
-	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode())) // URL-encoded payload
-
-	//r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	resp, _ := client.Do(r)
-
-	buf := new(strings.Builder)
-	n, err := io.Copy(buf, resp.Body)
-	if err != nil {
-		log.DefaultLogger.Warn("err", err)
-		log.DefaultLogger.Info("n:", n)
-	}
-
-	//log.DefaultLogger.Info("BUFF :", buf.String())
-
-	type Iot struct {
-		Access_token string `json:"access_token"`
-	}
-	//Getting json from string
-	in := []byte(buf.String())
-
-	var iot Iot
-	errr := json.Unmarshal(in, &iot)
-	if errr != nil {
-		panic(err)
-	}
-	//log.DefaultLogger.Info("TOKEN: ", string(iot.Access_token))
-	return string(iot.Access_token)
-
-}
-
-func getEntityById(entity string, token string) {
-
-	bToken := "Bearer " + token
-	log.DefaultLogger.Info("BEARRRRRRRR", "request", bToken)
-	apiUrl := "https://data-hub.eglobalmark.com"
-	resource := "/ngsi-ld/v1/entities/" + entity
-
-	u, _ := url.ParseRequestURI(apiUrl)
-	u.Path = resource
-	urlStr := u.String()
-
-	client := &http.Client{}
-	r, _ := http.NewRequest("GET", urlStr, nil)
-
-	//r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
-	r.Header.Add("Authorization", bToken)
-	//r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	//r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	resp, _ := client.Do(r)
-
-	buf := new(strings.Builder)
-	n, err := io.Copy(buf, resp.Body)
-	if err != nil {
-		log.DefaultLogger.Warn("err", err)
-		log.DefaultLogger.Info("n:", n)
-	}
-	log.DefaultLogger.Info("response Status:", "request", resp.Status)
-	log.DefaultLogger.Info("response Headers:", "request", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	log.DefaultLogger.Info("response Body:", "request", string(body))
-	//log.DefaultLogger.Info("BUFF :", "request", buf.String())
-	/*
-		type Iot struct {
-			Access_token string `json:"access_token"`
-		}
-		//Getting json from string
-		in := []byte(buf.String())
-
-		var iot Iot
-		errr := json.Unmarshal(in, &iot)
-		if errr != nil {
-			panic(err)
-		}
-
-		fmt.Println("TOKEN: ", string(iot.Access_token))
-		log.DefaultLogger.Info("TOKEN: ", string(iot.Access_token))
-		return string(iot.Access_token)
-	*/
 }
