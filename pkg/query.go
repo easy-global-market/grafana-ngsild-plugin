@@ -45,10 +45,9 @@ type SampleDatasource struct {
 func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	log.DefaultLogger.Info("QueryData ", "request", req)
 
-	log.DefaultLogger.Info("QueryData ", "request", req.Queries)
+	//log.DefaultLogger.Info("QueryData ", "request", req.Queries)
 
 	token := getToken()
-	//token := test()
 	log.DefaultLogger.Info("TOKEN : ", token)
 
 	// create response struct
@@ -101,27 +100,41 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 
 	entity := getEntityById(qm.QueryText, token)
-	log.DefaultLogger.Info("NAME.Value ", "request", string(entity.Name.Value))
 
 	// create data frame response
-	//frame := data.NewFrame("response")
 	frame := data.NewFrame(qm.QueryText)
 
-	// add the time dimension
-	//frame.Fields = append(frame.Fields,
-	//	data.NewField("time", nil, []time.Time{query.TimeRange.From, query.TimeRange.To}),
-	//)
+	//Store each value on a slice
+	var value []string
+	var createdAt []string
+	var modifiedAt []string
+
+	for k, v := range entity {
+		var a Attribute
+		if err := json.Unmarshal(v, &a); err == nil {
+
+			//log.DefaultLogger.Warn("Got attribute : ", k, string(v))
+			//If we have a value data, set value, else set the object data
+			if string(a.Value) != "" {
+				value = append(value, k+" : "+string(a.Value))
+			} else {
+				value = append(value, k+" : "+string(a.Object))
+			}
+			createdAt = append(createdAt, a.CreatedAt)
+			modifiedAt = append(modifiedAt, a.ModifiedAt)
+
+		}
+	}
 
 	frame.Fields = append(frame.Fields,
-		data.NewField(qm.QueryText, nil, []string{"type : ", "createdAt", "name"}),
+		data.NewField("Value :", nil, value),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("value", nil, []string{entity.Type, entity.CreatedAt, entity.Name.Value}),
+		data.NewField("CreatedAt :", nil, createdAt),
 	)
-
-	// frame.Fields = append(frame.Fields,
-	// 	data.NewField("values", nil, []int64{5, 10}),
-	// )
+	frame.Fields = append(frame.Fields,
+		data.NewField("ModifiedAt :", nil, modifiedAt),
+	)
 
 	// add the frames to the response
 	response.Frames = append(response.Frames, frame)

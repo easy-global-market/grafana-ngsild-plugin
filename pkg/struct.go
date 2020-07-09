@@ -1,6 +1,7 @@
 package main
 
-//Token struct
+import "encoding/json"
+
 type Token struct {
 	Access_token       string `json:"access_token"`
 	Expires_in         int    `json:"expires_in"`
@@ -11,18 +12,10 @@ type Token struct {
 	Scope              string `json:"scope"`
 }
 
-//Name struc for Apiary
-type Name struct {
-	Type       string `json:"type"`
-	CreatedAt  string `json:"createdAt"`
-	Value      string `json:"value"`
-	ModifiedAt string `json:"modifiedAt"`
-}
-
-//Apiary Struct
-type Apiary struct {
-	Id        string `json:"id"`
-	Type      string `json:"type"`
-	CreatedAt string `json:"createdAt"`
-	Name      Name
+type Attribute struct {
+	Type       string          `json:"type"`
+	CreatedAt  string          `json:"createdAt"`
+	ModifiedAt string          `json:"modifiedAt"`
+	Object     json.RawMessage `json:"object"`
+	Value      json.RawMessage `json:"value"`
 }
