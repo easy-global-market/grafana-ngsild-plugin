@@ -45,8 +45,6 @@ type SampleDatasource struct {
 func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	log.DefaultLogger.Info("QueryData ", "request", req)
 
-	//log.DefaultLogger.Info("QueryData ", "request", req.Queries)
-
 	token := getToken()
 	log.DefaultLogger.Info("TOKEN : ", token)
 
