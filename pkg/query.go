@@ -51,18 +51,6 @@ func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 	// create response struct
 	response := backend.NewQueryDataResponse()
 
-	mydata := []string{}
-	for _, q := range req.Queries {
-
-		var qm queryModel
-		response := backend.DataResponse{}
-		response.Error = json.Unmarshal(q.JSON, &qm)
-		mydata = append(mydata, qm.QueryText)
-	}
-	for i := 0; i < len(mydata); i++ {
-		log.DefaultLogger.Info("DATA ", mydata[i])
-	}
-
 	// loop over queries and execute them individually.
 	for _, q := range req.Queries {
 		res := td.query(ctx, q, token)
