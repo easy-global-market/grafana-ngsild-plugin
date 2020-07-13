@@ -1,7 +1,7 @@
 import defaults from 'lodash/defaults';
 
 import React, { ChangeEvent, PureComponent, MouseEvent } from 'react';
-import { LegacyForms } from '@grafana/ui';
+import { LegacyForms, Button } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
 import { DataSource } from './DataSource';
 import { defaultQuery, MyDataSourceOptions, MyQuery } from './types';
@@ -12,9 +12,9 @@ type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
   onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { onChange, query, onRunQuery } = this.props;
+    const { onChange, query } = this.props;
     onChange({ ...query, queryText: event.target.value });
-    onRunQuery();
+    //onRunQuery();
   };
 
   onConstantChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -24,12 +24,10 @@ export class QueryEditor extends PureComponent<Props> {
     onRunQuery();
   };
 
-  onConfirm(event: MouseEvent) {
-    console.log('click');
-    event.preventDefault();
+  onConfirm = (event: MouseEvent) => {
     const { onRunQuery } = this.props;
     onRunQuery();
-  }
+  };
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
@@ -54,9 +52,9 @@ export class QueryEditor extends PureComponent<Props> {
           tooltip="urn:ngsi-ld: ..."
         />
 
-        {/* <Button size="md" variant="secondary" onClick={this.onConfirm}>
+        <Button size="md" variant="secondary" onClick={this.onConfirm}>
           Confirm
-        </Button> */}
+        </Button>
       </div>
     );
   }
