@@ -13,7 +13,6 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
-//test jenkins 2
 // newDatasource returns datasource.ServeOpts.
 func newDatasource() datasource.ServeOpts {
 	// creates a instance manager for your plugin. The function passed
