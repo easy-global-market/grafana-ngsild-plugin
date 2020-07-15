@@ -172,8 +172,8 @@ func dateFormat(inputDate string) string {
 		//input format is like this layout
 		layout := "2006-01-02T15:04:05.999999Z"
 		time, _ := time.Parse(layout, inputDate)
-		inputDate = time.Format("2 Jan 2006 15:04:05")
-
+		timeToDisplay := time.Format("2 Jan 2006 15:04:05")
+		return timeToDisplay
 	}
 	return inputDate
 }
