@@ -109,27 +109,9 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 			} else {
 				value = append(value, string(a.Object))
 			}
-			//If createdAt date exist, we display it in a readable format
-			if string(a.CreatedAt) != "" {
-				//input format is like this layout
-				layout := "2006-01-02T15:04:05.999999Z"
-				time, _ := time.Parse(layout, a.CreatedAt)
-				timeToDisplay := time.Format("2 Jan 2006 15:04:05")
-				createdAt = append(createdAt, timeToDisplay)
-			} else {
-				createdAt = append(createdAt, a.CreatedAt)
-			}
 
-			if string(a.ModifiedAt) != "" {
-				//input format is like this layout
-				layout := "2006-01-02T15:04:05.999999Z"
-				time, _ := time.Parse(layout, a.ModifiedAt)
-				timeToDisplay := time.Format("2 Jan 2006 15:04:05")
-				modifiedAt = append(modifiedAt, timeToDisplay)
-			} else {
-				modifiedAt = append(modifiedAt, a.ModifiedAt)
-			}
-
+			createdAt = append(createdAt, dateFormat(a.CreatedAt))
+			modifiedAt = append(modifiedAt, dateFormat(a.ModifiedAt))
 		}
 	}
 
@@ -183,4 +165,15 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 func (s *instanceSettings) Dispose() {
 	// Called before creatinga a new instance to allow plugin authors
 	// to cleanup.
+}
+
+func dateFormat(inputDate string) string {
+	if inputDate != "" {
+		//input format is like this layout
+		layout := "2006-01-02T15:04:05.999999Z"
+		time, _ := time.Parse(layout, inputDate)
+		inputDate = time.Format("2 Jan 2006 15:04:05")
+
+	}
+	return inputDate
 }
