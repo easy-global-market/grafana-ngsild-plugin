@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -105,9 +106,9 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 			//If we have a value data, set value, else set the object data
 			if string(a.Value) != "" {
-				value = append(value, string(a.Value))
+				value = append(value, strings.Trim(string(a.Value), "\""))
 			} else {
-				value = append(value, string(a.Object))
+				value = append(value, strings.Trim(string(a.Object), "\""))
 			}
 
 			createdAt = append(createdAt, dateFormat(a.CreatedAt))
