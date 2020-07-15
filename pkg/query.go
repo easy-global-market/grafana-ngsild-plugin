@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
@@ -91,6 +92,7 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	frame := data.NewFrame(qm.QueryText)
 
 	//Store each value on a slice
+	var attribute []string
 	var value []string
 	var createdAt []string
 	var modifiedAt []string
@@ -99,27 +101,31 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		var a Attribute
 		if err := json.Unmarshal(v, &a); err == nil {
 
-			//log.DefaultLogger.Warn("Got attribute : ", k, string(v))
+			attribute = append(attribute, k)
+
 			//If we have a value data, set value, else set the object data
 			if string(a.Value) != "" {
-				value = append(value, k+" : "+string(a.Value))
+				value = append(value, string(a.Value))
 			} else {
-				value = append(value, k+" : "+string(a.Object))
+				value = append(value, string(a.Object))
 			}
-			createdAt = append(createdAt, a.CreatedAt)
-			modifiedAt = append(modifiedAt, a.ModifiedAt)
 
+			createdAt = append(createdAt, dateFormat(a.CreatedAt))
+			modifiedAt = append(modifiedAt, dateFormat(a.ModifiedAt))
 		}
 	}
 
 	frame.Fields = append(frame.Fields,
-		data.NewField("Value :", nil, value),
+		data.NewField("Attribute", nil, attribute),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("CreatedAt :", nil, createdAt),
+		data.NewField("Value ", nil, value),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("ModifiedAt :", nil, modifiedAt),
+		data.NewField("Created at", nil, createdAt),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("Modified at", nil, modifiedAt),
 	)
 
 	// add the frames to the response
@@ -159,4 +165,15 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 func (s *instanceSettings) Dispose() {
 	// Called before creatinga a new instance to allow plugin authors
 	// to cleanup.
+}
+
+func dateFormat(inputDate string) string {
+	if inputDate != "" {
+		//input format is like this layout
+		layout := "2006-01-02T15:04:05.999999Z"
+		time, _ := time.Parse(layout, inputDate)
+		timeToDisplay := time.Format("2 Jan 2006 15:04:05")
+		return timeToDisplay
+	}
+	return inputDate
 }
