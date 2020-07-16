@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    options {
+        copyArtifactPermission('grafana builder')
+    }
     stages {
         stage('Build frontend') {
             steps {
