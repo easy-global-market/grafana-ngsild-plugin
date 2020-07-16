@@ -4,17 +4,15 @@ pipeline {
     stages {
         stage('Build frontend') {
             steps {
-                echo 'Building frontend'
+		echo 'Building frontend'
 		sh 'yarn build'
             }
         }
 	stage('Build backend') {
             steps {
-                echo 'Building backend'
+		echo 'Building backend'
 		sh 'mage -v'
             }
         }
-
-
     }
 }
