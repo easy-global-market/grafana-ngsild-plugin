@@ -1,19 +1,19 @@
 pipeline {
     agent any
     options {
-        copyArtifactPermission('grafana builder')
+        copyArtifactPermission('Grafana builder')
     }
     stages {
         stage('Build frontend') {
             steps {
-		echo 'Building frontend'
-		sh 'yarn build'
+		        echo 'Building frontend'
+		        sh 'yarn build'
             }
         }
 	stage('Build backend') {
             steps {
-		echo 'Building backend'
-		sh 'mage -v'
+		        echo 'Building backend'
+		        sh 'mage -v'
             }
         }
     }
