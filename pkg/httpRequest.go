@@ -84,5 +84,4 @@ func getEntityById(id string, token string) map[string]json.RawMessage {
 	}
 
 	return e
-
 }
