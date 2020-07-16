@@ -13,8 +13,8 @@ pipeline {
         stage('Build frontend') {
             steps {
                 echo 'Building frontend'
-                sh 'yarn install'
-                sh 'yarn build'
+                sh 'npm install'
+                sh 'npm run-script build'
             }
         }
     }
