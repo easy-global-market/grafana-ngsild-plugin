@@ -19,12 +19,17 @@ pipeline {
         }
         stage('Zip folder') {
             steps {
-                zip zipFile: 'dist.zip', dir: '/dist', archive: true
+                script {
+                    echo 'Zipping dist folder'
+                    zip zipFile: 'dist.zip', dir: '/dist', archive: true
+                    sh 'ls -la'
+                }
             }
         }
     }
     post {
         always {
+            echo 'Archiving Artifact'
             archiveArtifacts artifacts: 'dist.zip', fingerprint: false
         }
     }
