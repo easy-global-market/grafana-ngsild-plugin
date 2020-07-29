@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Tar folder') {
             steps {
-                sh 'tar czvf dist.tar.gz dest'
+                sh 'tar czvf dist.tar.gz dist'
             }
         }
     }
