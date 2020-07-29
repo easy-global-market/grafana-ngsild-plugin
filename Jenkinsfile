@@ -20,7 +20,8 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'dist/**/*'
+            zip zipFile: 'dist.zip', archive: false, dir: ''
+            archiveArtifacts artifacts: 'dist.zip', fingerprint: false
         }
     }
 }
