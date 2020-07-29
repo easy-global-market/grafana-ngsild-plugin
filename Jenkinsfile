@@ -20,7 +20,7 @@ pipeline {
         stage('Zip folder') {
             steps {
                 script {
-                    zip zipFile: 'dist.zip', dir: ''
+                    zip zipFile: 'dist.zip', dir: 'dist'
                 }
             }
         }
