@@ -17,16 +17,15 @@ pipeline {
                 sh 'npm run-script build'
             }
         }
-        stage('Zip folder') {
+        stage('Tar folder') {
             steps {
-                zip zipFile: 'dist.zip', dir: './dist', archive: false
-                sh 'ls -la'
+                sh 'tar czvf dist.tar.gz dest'
             }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts: 'dist.zip', fingerprint: false
+            archiveArtifacts artifacts: 'dist.tar.gz', fingerprint: false
         }
     }
 }
