@@ -29,7 +29,7 @@ pipeline {
     }
     post {
         always {
-            echo 'Archiving Artifact'
+            echo 'Archiv Artifact'
             archiveArtifacts artifacts: 'dist.zip', fingerprint: false
         }
     }
