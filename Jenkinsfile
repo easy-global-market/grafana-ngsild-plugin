@@ -19,7 +19,9 @@ pipeline {
         }
         stage('Zip folder') {
             steps {
-                zip zipFile: 'dist.zip', dir: '/dist', archive: true
+                script {
+                    zip zipFile: 'dist.zip', dir: '/dist', archive: false
+                }
             }
         }
     }
