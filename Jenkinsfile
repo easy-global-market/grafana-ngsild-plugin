@@ -17,10 +17,16 @@ pipeline {
                 sh 'npm run-script build'
             }
         }
+        stage('Zip folder') {
+            steps {
+                script {
+                    zip zipFile: 'dist.zip', dir: ''
+                }
+            }
+        }
     }
     post {
         always {
-            zip zipFile: 'dist.zip', archive: false, dir: ''
             archiveArtifacts artifacts: 'dist.zip', fingerprint: false
         }
     }
