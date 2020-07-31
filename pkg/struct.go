@@ -11,7 +11,6 @@ type Token struct {
 	Session_state      string `json:"session_state"`
 	Scope              string `json:"scope"`
 }
-
 type Attribute struct {
 	Type       string          `json:"type"`
 	CreatedAt  string          `json:"createdAt"`
