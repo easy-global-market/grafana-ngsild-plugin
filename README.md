@@ -1,8 +1,5 @@
 # Ngsild plugin for Grafana
 
-[![CircleCI](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource-backend/tree/master)
-
-
 ### Frontend
 
 1. Install dependencies
