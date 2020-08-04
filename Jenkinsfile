@@ -15,7 +15,7 @@ pipeline {
                 sh 'npm run-script build'
             }
         }
-        stage('Tar folder') {
+        stage('Archive deliverable') {
             steps {
                 sh 'tar czvf dist.tar.gz dist'
             }
