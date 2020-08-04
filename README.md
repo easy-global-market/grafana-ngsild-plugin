@@ -1,4 +1,4 @@
-# Ngsild plugin for Grafana
+# NGSI-LD plugin for Grafana
 
 ## Frontend
 
