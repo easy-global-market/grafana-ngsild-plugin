@@ -1,6 +1,6 @@
 {
   "type": "datasource",
-  "name": "ngsild-plugin",
+  "name": "NGSI-LD plugin",
   "id": "stellio-ngsild-plugin",
   "metrics": true,
   "backend": true,
@@ -14,8 +14,8 @@
     },
     "keywords": [],
     "logos": {
-      "small": "img/logo.svg",
-      "large": "img/logo.svg"
+      "small": "img/ngsild.jpeg",
+      "large": "img/ngsild.jpeg"
     },
     "links": [
       {
