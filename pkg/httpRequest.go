@@ -15,8 +15,8 @@ func getToken() string {
 	apiUrl := "https://sso.eglobalmark.com"
 	resource := "/auth/realms/stellio/protocol/openid-connect/token"
 	data := url.Values{}
-	data.Set("client_id", "stelliograf")
-	data.Set("client_secret", "412fff7a-a618-4313-a342-1b844d845b45")
+	data.Set("client_id", "stellio-grafana")
+	data.Set("client_secret", "391ed0d8-3f47-4261-b161-83c87464cfc7")
 	data.Set("grant_type", "client_credentials")
 
 	uri, _ := url.ParseRequestURI(apiUrl)
