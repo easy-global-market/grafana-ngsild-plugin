@@ -11,12 +11,12 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
 
-func getToken() string {
-	apiUrl := "https://sso.eglobalmark.com"
-	resource := "/auth/realms/stellio/protocol/openid-connect/token"
+func getToken(instSetting *instanceSettings) string {
+	apiUrl := instSetting.tokenUrl
+	resource := instSetting.resource
 	data := url.Values{}
-	data.Set("client_id", "stellio-grafana")
-	data.Set("client_secret", "391ed0d8-3f47-4261-b161-83c87464cfc7")
+	data.Set("client_id", instSetting.client_id)
+	data.Set("client_secret", instSetting.client_secret)
 	data.Set("grant_type", "client_credentials")
 
 	uri, _ := url.ParseRequestURI(apiUrl)
@@ -49,11 +49,11 @@ func getToken() string {
 
 }
 
-func getEntityById(id string, token string) map[string]json.RawMessage {
+func getEntityById(id string, token string, instSetting *instanceSettings) map[string]json.RawMessage {
 
 	bToken := "Bearer " + token
-	apiUrl := "https://data-hub.eglobalmark.com"
-	resource := "/ngsi-ld/v1/entities/" + id
+	apiUrl := instSetting.apiUrl
+	resource := instSetting.apiResource + id
 
 	u, _ := url.ParseRequestURI(apiUrl)
 	u.Path = resource

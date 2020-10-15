@@ -1,6 +1,8 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Token struct {
 	Access_token       string `json:"access_token"`
@@ -17,4 +19,25 @@ type Attribute struct {
 	ModifiedAt string          `json:"modifiedAt"`
 	Object     json.RawMessage `json:"object"`
 	Value      json.RawMessage `json:"value"`
+}
+
+type queryModel struct {
+	QueryText string `json:"queryText"`
+}
+
+type instanceSettings struct {
+	tokenUrl      string
+	resource      string
+	client_id     string
+	client_secret string
+	apiUrl        string
+	apiResource   string
+}
+
+type settingsModel struct {
+	TokenUrl    string `json:"tokenUrl"`
+	Resource    string `json:"resource"`
+	Client_id   string `json:"client_id"`
+	ApiUrl      string `json:"apiUrl"`
+	ApiResource string `json:"apiResource"`
 }
