@@ -90,34 +90,37 @@ export class ConfigEditor extends PureComponent<Props, State> {
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
-            label="token URL"
+            label="Token URL"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onTokenUrlChange}
             value={jsonData.tokenUrl || ''}
-            placeholder="url to get token"
+            placeholder="http://localhost:3306"
+            tooltip="URL to get token (without path)"
           />
         </div>
 
         <div className="gf-form">
           <FormField
-            label="resource URL"
+            label="Path"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onResourceChange}
             value={jsonData.resource || ''}
-            placeholder="ressources to complete URL"
+            placeholder="/auth/.../token"
+            tooltip="Path to complete token URL"
           />
         </div>
 
         <div className="gf-form">
           <FormField
-            label="client_id"
+            label="Client_id"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onClientIdChange}
             value={jsonData.client_id || ''}
-            placeholder="client_id to get token"
+            placeholder="id"
+            tooltip="client_id to get token"
           />
         </div>
 
@@ -126,8 +129,9 @@ export class ConfigEditor extends PureComponent<Props, State> {
             <SecretFormField
               isConfigured={(secureJsonFields && secureJsonFields.client_secret) as boolean}
               value={secureJsonData.client_secret || ''}
-              label="client_secret"
-              placeholder="client_secret to get token"
+              label="Client_secret"
+              placeholder="secret"
+              tooltip="client_secret to get token"
               labelWidth={7}
               inputWidth={22}
               onReset={this.onResetClientSecretKey}
@@ -138,23 +142,25 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
         <div className="gf-form">
           <FormField
-            label="api URL"
+            label="Api URL"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onApiUrlChange}
             value={jsonData.apiUrl || ''}
-            placeholder="api URL to make http request"
+            placeholder="http://localhost:3307"
+            tooltip="Api URL to make http request (without path)"
           />
         </div>
 
         <div className="gf-form">
           <FormField
-            label="api resource URL"
+            label="Api path"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onApiResourceChange}
             value={jsonData.apiResource || ''}
-            placeholder="resource to complete api URL"
+            placeholder="/v1/.../entities/"
+            tooltip="Api path to complete api URL"
           />
         </div>
       </div>
