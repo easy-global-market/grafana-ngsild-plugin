@@ -46,15 +46,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
     onOptionsChange({ ...options, jsonData });
   };
 
-  onApiResourceChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { onOptionsChange, options } = this.props;
-    const jsonData = {
-      ...options.jsonData,
-      apiResource: event.target.value,
-    };
-    onOptionsChange({ ...options, jsonData });
-  };
-
   // Secure field (only sent to the backend)
   onClientSecretChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
@@ -90,37 +81,34 @@ export class ConfigEditor extends PureComponent<Props, State> {
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
-            label="Token URL"
-            labelWidth={7}
+            label="SSO URL"
+            labelWidth={8}
             inputWidth={22}
             onChange={this.onTokenUrlChange}
             value={jsonData.tokenUrl || ''}
-            placeholder="http://localhost:3306"
-            tooltip="URL to get token (without path)"
+            placeholder="https://my.sso.org"
           />
         </div>
 
         <div className="gf-form">
           <FormField
-            label="Path"
-            labelWidth={7}
+            label="Token endpoint path"
+            labelWidth={8}
             inputWidth={22}
             onChange={this.onResourceChange}
             value={jsonData.resource || ''}
-            placeholder="/auth/.../token"
-            tooltip="Path to complete token URL"
+            placeholder="/path/to/token/endpoint"
           />
         </div>
 
         <div className="gf-form">
           <FormField
             label="Client id"
-            labelWidth={7}
+            labelWidth={8}
             inputWidth={22}
             onChange={this.onClientIdChange}
             value={jsonData.client_id || ''}
-            placeholder="id"
-            tooltip="client id to get token"
+            tooltip="OAuth2 client id to be used by the plugin"
           />
         </div>
 
@@ -130,9 +118,9 @@ export class ConfigEditor extends PureComponent<Props, State> {
               isConfigured={(secureJsonFields && secureJsonFields.client_secret) as boolean}
               value={secureJsonData.client_secret || ''}
               label="Client secret"
-              placeholder="secret"
-              tooltip="client secret to get token"
-              labelWidth={7}
+              tooltip="OAuth client secret to be used by the plugin"
+              placeholder=""
+              labelWidth={8}
               inputWidth={22}
               onReset={this.onResetClientSecretKey}
               onChange={this.onClientSecretChange}
@@ -142,25 +130,12 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
         <div className="gf-form">
           <FormField
-            label="Api URL"
-            labelWidth={7}
+            label="NGSI-LD API URL"
+            labelWidth={8}
             inputWidth={22}
             onChange={this.onApiUrlChange}
             value={jsonData.apiUrl || ''}
-            placeholder="http://localhost:3307"
-            tooltip="Api URL to make http request (without path)"
-          />
-        </div>
-
-        <div className="gf-form">
-          <FormField
-            label="Api path"
-            labelWidth={7}
-            inputWidth={22}
-            onChange={this.onApiResourceChange}
-            value={jsonData.apiResource || ''}
-            placeholder="/v1/.../entities/"
-            tooltip="Api path to complete api URL"
+            placeholder="https://my.context-brocker.org"
           />
         </div>
       </div>

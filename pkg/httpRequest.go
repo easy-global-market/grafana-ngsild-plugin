@@ -53,7 +53,7 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 
 	bToken := "Bearer " + token
 	apiUrl := instSetting.apiUrl
-	resource := instSetting.apiResource + id
+	resource := "/ngsi-ld/v1/entities/" + id
 
 	u, _ := url.ParseRequestURI(apiUrl)
 	u.Path = resource

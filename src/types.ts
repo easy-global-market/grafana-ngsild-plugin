@@ -14,7 +14,6 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
   resource?: string;
   client_id?: string;
   apiUrl?: string;
-  apiResource?: string;
 }
 
 /**

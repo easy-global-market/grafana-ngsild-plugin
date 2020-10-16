@@ -54,7 +54,7 @@ func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 	}
 	instSetting, _ := instance.(*instanceSettings)
 
-	log.DefaultLogger.Info("SETTINGS ", "tokenUrl", instSetting.tokenUrl, "resource", instSetting.resource, "client_id", instSetting.client_id, "client_secret", instSetting.client_secret, "apiUrl", instSetting.apiUrl, "apiResource", instSetting.apiResource)
+	log.DefaultLogger.Info("SETTINGS ", "tokenUrl", instSetting.tokenUrl, "resource", instSetting.resource, "client_id", instSetting.client_id, "client_secret", instSetting.client_secret, "apiUrl", instSetting.apiUrl)
 
 	//Get token with settings param (url, resource, client_id, client_secret)
 	token := getToken(instSetting)
@@ -157,7 +157,7 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 	var secureData = setting.DecryptedSecureJSONData
 	client_secret := secureData["client_secret"]
 
-	//log.DefaultLogger.Info("SETTINGS ", "tokenUrl", settings.TokenUrl, "resource", settings.Resource, "client_id", settings.Client_id, "client_secret", client_secret, "apiUrl", settings.ApiUrl, "apiResource", settings.ApiResource)
+	//log.DefaultLogger.Info("SETTINGS ", "tokenUrl", settings.TokenUrl, "resource", settings.Resource, "client_id", settings.Client_id, "client_secret", client_secret, "apiUrl", settings.ApiUrl)
 
 	return &instanceSettings{
 		tokenUrl:      settings.TokenUrl,
@@ -165,7 +165,6 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 		client_id:     settings.Client_id,
 		client_secret: client_secret,
 		apiUrl:        settings.ApiUrl,
-		apiResource:   settings.ApiResource,
 	}, nil
 }
 

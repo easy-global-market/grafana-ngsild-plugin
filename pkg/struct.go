@@ -31,13 +31,11 @@ type instanceSettings struct {
 	client_id     string
 	client_secret string
 	apiUrl        string
-	apiResource   string
 }
 
 type settingsModel struct {
-	TokenUrl    string `json:"tokenUrl"`
-	Resource    string `json:"resource"`
-	Client_id   string `json:"client_id"`
-	ApiUrl      string `json:"apiUrl"`
-	ApiResource string `json:"apiResource"`
+	TokenUrl  string `json:"tokenUrl"`
+	Resource  string `json:"resource"`
+	Client_id string `json:"client_id"`
+	ApiUrl    string `json:"apiUrl"`
 }
