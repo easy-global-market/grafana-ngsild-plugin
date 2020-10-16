@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"strings"
 	"time"
 
@@ -46,15 +45,24 @@ type SampleDatasource struct {
 func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	log.DefaultLogger.Info("QueryData ", "request", req)
 
-	token := getToken()
-	log.DefaultLogger.Info("TOKEN : ", token)
-
 	// create response struct
 	response := backend.NewQueryDataResponse()
 
+	instance, err := td.im.Get(req.PluginContext)
+	if err != nil {
+		return nil, err
+	}
+	instSetting, _ := instance.(*instanceSettings)
+
+	log.DefaultLogger.Info("SETTINGS ", "authServerUrl", instSetting.authServerUrl, "resource", instSetting.resource, "clientId", instSetting.clientId, "clientSecret", instSetting.clientSecret, "contextBrokerUrl", instSetting.contextBrokerUrl)
+
+	//Get token with settings param (url, resource, client_id, client_secret)
+	token := getToken(instSetting)
+	log.DefaultLogger.Info("TOKEN : ", "token", token)
+
 	// loop over queries and execute them individually.
 	for _, q := range req.Queries {
-		res := td.query(ctx, q, token)
+		res := td.query(ctx, q, instSetting, token)
 
 		// save the response in a hashmap
 		// based on with RefID as identifier
@@ -63,12 +71,7 @@ func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 	return response, nil
 }
 
-type queryModel struct {
-	Format    string `json:"format"`
-	QueryText string `json:"queryText"`
-}
-
-func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, token string) backend.DataResponse {
+func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, instSetting *instanceSettings, token string) backend.DataResponse {
 	// Unmarshal the json into our queryModel
 	var qm queryModel
 	response := backend.DataResponse{}
@@ -78,15 +81,10 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		return response
 	}
 
-	// Log a warning if `Format` is empty.
-	if qm.Format == "" {
-		log.DefaultLogger.Warn("format is empty. defaulting to time series")
-	}
-
 	//entityID demandé
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 
-	entity := getEntityById(qm.QueryText, token)
+	entity := getEntityById(qm.QueryText, token, instSetting)
 
 	// create data frame response
 	frame := data.NewFrame(qm.QueryText)
@@ -147,13 +145,26 @@ func (td *SampleDatasource) CheckHealth(ctx context.Context, req *backend.CheckH
 	}, nil
 }
 
-type instanceSettings struct {
-	httpClient *http.Client
-}
-
 func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+	//get settings (tokenUrl, resource, client_id)
+	var settings settingsModel
+	err := json.Unmarshal(setting.JSONData, &settings)
+	if err != nil {
+		log.DefaultLogger.Warn("error marshalling", "err", err)
+		return nil, err
+	}
+	//get secure settings (client_secret)
+	var secureData = setting.DecryptedSecureJSONData
+	clientSecret := secureData["clientSecret"]
+
+	//log.DefaultLogger.Info("SETTINGS ", "authServerUrl", settings.AuthServerUrl, "resource", settings.Resource, "clientId", settings.ClientId, "clientSecret", clientSecret, "contextBrokerUrl", settings.ContextBrokerUrl)
+
 	return &instanceSettings{
-		httpClient: &http.Client{},
+		authServerUrl:    settings.AuthServerUrl,
+		resource:         settings.Resource,
+		clientId:         settings.ClientId,
+		clientSecret:     clientSecret,
+		contextBrokerUrl: settings.ContextBrokerUrl,
 	}, nil
 }
 

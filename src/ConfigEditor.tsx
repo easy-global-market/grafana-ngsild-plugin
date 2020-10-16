@@ -10,37 +10,64 @@ interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> 
 interface State {}
 
 export class ConfigEditor extends PureComponent<Props, State> {
-  onPathChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onAuthServerUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      path: event.target.value,
+      authServerUrl: event.target.value,
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+
+  onResourceChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onOptionsChange, options } = this.props;
+    const jsonData = {
+      ...options.jsonData,
+      resource: event.target.value,
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+
+  onClientIdChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onOptionsChange, options } = this.props;
+    const jsonData = {
+      ...options.jsonData,
+      clientId: event.target.value,
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+
+  onContextBrokerUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onOptionsChange, options } = this.props;
+    const jsonData = {
+      ...options.jsonData,
+      contextBrokerUrl: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
 
   // Secure field (only sent to the backend)
-  onAPIKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onClientSecretChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
       ...options,
       secureJsonData: {
-        apiKey: event.target.value,
+        clientSecret: event.target.value,
       },
     });
   };
 
-  onResetAPIKey = () => {
+  onResetClientSecretKey = () => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
       ...options,
       secureJsonFields: {
         ...options.secureJsonFields,
-        apiKey: false,
+        client_secret: false,
       },
       secureJsonData: {
         ...options.secureJsonData,
-        apiKey: '',
+        client_secret: '',
       },
     });
   };
@@ -54,28 +81,62 @@ export class ConfigEditor extends PureComponent<Props, State> {
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
-            label="Path"
-            labelWidth={6}
-            inputWidth={20}
-            onChange={this.onPathChange}
-            value={jsonData.path || ''}
-            placeholder="json field returned to frontend"
+            label="SSO URL"
+            labelWidth={8}
+            inputWidth={22}
+            onChange={this.onAuthServerUrlChange}
+            value={jsonData.authServerUrl || ''}
+            placeholder="https://my.sso.org"
+          />
+        </div>
+
+        <div className="gf-form">
+          <FormField
+            label="Token endpoint path"
+            labelWidth={8}
+            inputWidth={22}
+            onChange={this.onResourceChange}
+            value={jsonData.resource || ''}
+            placeholder="/path/to/token/endpoint"
+          />
+        </div>
+
+        <div className="gf-form">
+          <FormField
+            label="Client id"
+            labelWidth={8}
+            inputWidth={22}
+            onChange={this.onClientIdChange}
+            value={jsonData.clientId || ''}
+            tooltip="OAuth2 client id to be used by the plugin"
           />
         </div>
 
         <div className="gf-form-inline">
           <div className="gf-form">
             <SecretFormField
-              isConfigured={(secureJsonFields && secureJsonFields.apiKey) as boolean}
-              value={secureJsonData.apiKey || ''}
-              label="API Key"
-              placeholder="secure json field (backend only)"
-              labelWidth={6}
-              inputWidth={20}
-              onReset={this.onResetAPIKey}
-              onChange={this.onAPIKeyChange}
+              isConfigured={(secureJsonFields && secureJsonFields.client_secret) as boolean}
+              value={secureJsonData.clientSecret || ''}
+              label="Client secret"
+              tooltip="OAuth client secret to be used by the plugin"
+              placeholder=""
+              labelWidth={8}
+              inputWidth={22}
+              onReset={this.onResetClientSecretKey}
+              onChange={this.onClientSecretChange}
             />
           </div>
+        </div>
+
+        <div className="gf-form">
+          <FormField
+            label="NGSI-LD API URL"
+            labelWidth={8}
+            inputWidth={22}
+            onChange={this.onContextBrokerUrlChange}
+            value={jsonData.contextBrokerUrl || ''}
+            placeholder="https://my.context-brocker.org"
+          />
         </div>
       </div>
     );
