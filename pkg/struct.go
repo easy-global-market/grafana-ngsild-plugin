@@ -26,16 +26,16 @@ type queryModel struct {
 }
 
 type instanceSettings struct {
-	tokenUrl      string
-	resource      string
-	client_id     string
-	client_secret string
-	apiUrl        string
+	authServerUrl    string
+	resource         string
+	clientId         string
+	clientSecret     string
+	contextBrokerUrl string
 }
 
 type settingsModel struct {
-	TokenUrl  string `json:"tokenUrl"`
-	Resource  string `json:"resource"`
-	Client_id string `json:"client_id"`
-	ApiUrl    string `json:"apiUrl"`
+	AuthServerUrl    string `json:"authServerUrl"`
+	Resource         string `json:"resource"`
+	ClientId         string `json:"clientId"`
+	ContextBrokerUrl string `json:"contextBrokerUrl"`
 }

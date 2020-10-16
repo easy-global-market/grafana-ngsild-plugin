@@ -10,11 +10,11 @@ interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> 
 interface State {}
 
 export class ConfigEditor extends PureComponent<Props, State> {
-  onTokenUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onAuthServerUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      tokenUrl: event.target.value,
+      authServerUrl: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
@@ -32,16 +32,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      client_id: event.target.value,
+      clientId: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
 
-  onApiUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onContextBrokerUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      apiUrl: event.target.value,
+      contextBrokerUrl: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
@@ -52,7 +52,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
     onOptionsChange({
       ...options,
       secureJsonData: {
-        client_secret: event.target.value,
+        clientSecret: event.target.value,
       },
     });
   };
@@ -84,8 +84,8 @@ export class ConfigEditor extends PureComponent<Props, State> {
             label="SSO URL"
             labelWidth={8}
             inputWidth={22}
-            onChange={this.onTokenUrlChange}
-            value={jsonData.tokenUrl || ''}
+            onChange={this.onAuthServerUrlChange}
+            value={jsonData.authServerUrl || ''}
             placeholder="https://my.sso.org"
           />
         </div>
@@ -107,7 +107,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
             labelWidth={8}
             inputWidth={22}
             onChange={this.onClientIdChange}
-            value={jsonData.client_id || ''}
+            value={jsonData.clientId || ''}
             tooltip="OAuth2 client id to be used by the plugin"
           />
         </div>
@@ -116,7 +116,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
           <div className="gf-form">
             <SecretFormField
               isConfigured={(secureJsonFields && secureJsonFields.client_secret) as boolean}
-              value={secureJsonData.client_secret || ''}
+              value={secureJsonData.clientSecret || ''}
               label="Client secret"
               tooltip="OAuth client secret to be used by the plugin"
               placeholder=""
@@ -133,8 +133,8 @@ export class ConfigEditor extends PureComponent<Props, State> {
             label="NGSI-LD API URL"
             labelWidth={8}
             inputWidth={22}
-            onChange={this.onApiUrlChange}
-            value={jsonData.apiUrl || ''}
+            onChange={this.onContextBrokerUrlChange}
+            value={jsonData.contextBrokerUrl || ''}
             placeholder="https://my.context-brocker.org"
           />
         </div>

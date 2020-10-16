@@ -12,14 +12,14 @@ import (
 )
 
 func getToken(instSetting *instanceSettings) string {
-	apiUrl := instSetting.tokenUrl
+	authServerUrl := instSetting.authServerUrl
 	resource := instSetting.resource
 	data := url.Values{}
-	data.Set("client_id", instSetting.client_id)
-	data.Set("client_secret", instSetting.client_secret)
+	data.Set("client_id", instSetting.clientId)
+	data.Set("client_secret", instSetting.clientSecret)
 	data.Set("grant_type", "client_credentials")
 
-	uri, _ := url.ParseRequestURI(apiUrl)
+	uri, _ := url.ParseRequestURI(authServerUrl)
 	uri.Path = resource
 	urlStr := uri.String()
 
@@ -52,10 +52,10 @@ func getToken(instSetting *instanceSettings) string {
 func getEntityById(id string, token string, instSetting *instanceSettings) map[string]json.RawMessage {
 
 	bToken := "Bearer " + token
-	apiUrl := instSetting.apiUrl
+	contextBrokerUrl := instSetting.contextBrokerUrl
 	resource := "/ngsi-ld/v1/entities/" + id
 
-	u, _ := url.ParseRequestURI(apiUrl)
+	u, _ := url.ParseRequestURI(contextBrokerUrl)
 	u.Path = resource
 	urlStr := u.String()
 
