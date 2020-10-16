@@ -114,13 +114,13 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
         <div className="gf-form">
           <FormField
-            label="Client_id"
+            label="Client id"
             labelWidth={7}
             inputWidth={22}
             onChange={this.onClientIdChange}
             value={jsonData.client_id || ''}
             placeholder="id"
-            tooltip="client_id to get token"
+            tooltip="client id to get token"
           />
         </div>
 
@@ -129,9 +129,9 @@ export class ConfigEditor extends PureComponent<Props, State> {
             <SecretFormField
               isConfigured={(secureJsonFields && secureJsonFields.client_secret) as boolean}
               value={secureJsonData.client_secret || ''}
-              label="Client_secret"
+              label="Client secret"
               placeholder="secret"
-              tooltip="client_secret to get token"
+              tooltip="client secret to get token"
               labelWidth={7}
               inputWidth={22}
               onReset={this.onResetClientSecretKey}
