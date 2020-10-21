@@ -82,7 +82,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form">
           <FormField
             label="SSO URL"
-            labelWidth={8}
+            labelWidth={9}
             inputWidth={22}
             onChange={this.onAuthServerUrlChange}
             value={jsonData.authServerUrl || ''}
@@ -93,7 +93,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form">
           <FormField
             label="Token endpoint path"
-            labelWidth={8}
+            labelWidth={9}
             inputWidth={22}
             onChange={this.onResourceChange}
             value={jsonData.resource || ''}
@@ -104,7 +104,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form">
           <FormField
             label="Client id"
-            labelWidth={8}
+            labelWidth={9}
             inputWidth={22}
             onChange={this.onClientIdChange}
             value={jsonData.clientId || ''}
@@ -120,7 +120,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
               label="Client secret"
               tooltip="OAuth client secret to be used by the plugin"
               placeholder=""
-              labelWidth={8}
+              labelWidth={9}
               inputWidth={22}
               onReset={this.onResetClientSecretKey}
               onChange={this.onClientSecretChange}
@@ -131,7 +131,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form">
           <FormField
             label="NGSI-LD API URL"
-            labelWidth={8}
+            labelWidth={9}
             inputWidth={22}
             onChange={this.onContextBrokerUrlChange}
             value={jsonData.contextBrokerUrl || ''}
