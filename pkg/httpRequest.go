@@ -53,10 +53,9 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
-	resource := "/ngsi-ld/v1/entities/" + id
+	resource := "/ngsi-ld/v1/entities/" + id + "?options=sysAttrs"
 
-	u, _ := url.ParseRequestURI(contextBrokerUrl)
-	u.Path = resource
+	u, _ := url.ParseRequestURI(contextBrokerUrl + resource)
 	urlStr := u.String()
 
 	client := &http.Client{}
