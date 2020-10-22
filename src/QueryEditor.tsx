@@ -57,7 +57,7 @@ export class QueryEditor extends PureComponent<Props> {
           <InlineFormLabel width={6}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
-            width={27}
+            width={20}
             options={FORMAT_OPTIONS}
             onChange={this.onFormatChange}
             value={this.getFormatOption()}

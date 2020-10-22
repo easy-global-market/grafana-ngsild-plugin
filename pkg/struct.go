@@ -19,6 +19,10 @@ type Attribute struct {
 	ModifiedAt string          `json:"modifiedAt"`
 	Object     json.RawMessage `json:"object"`
 	Value      json.RawMessage `json:"value"`
+	Location   []struct {
+		Type        string          `json:"type"`
+		Coordinates json.RawMessage `json:"coordinates"`
+	}
 }
 
 type queryModel struct {

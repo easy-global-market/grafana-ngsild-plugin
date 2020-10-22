@@ -87,7 +87,10 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	entity := getEntityById(qm.QueryText, token, instSetting)
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
-
+	if qm.Format == "worldmap" {
+		worldMapResponse := transformeToWorldMap(qm.QueryText, entity, response)
+		return worldMapResponse
+	}
 	tableResponse := transformeToTable(qm.QueryText, entity, response)
 	return tableResponse
 
@@ -132,6 +135,62 @@ func transformeToTable(QueryText string, entity map[string]json.RawMessage, resp
 	)
 	frame.Fields = append(frame.Fields,
 		data.NewField("Modified at", nil, modifiedAt),
+	)
+
+	// add the frames to the response
+	response.Frames = append(response.Frames, frame)
+	return response
+}
+
+func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+	// create data frame response
+	frame := data.NewFrame(QueryText)
+
+	//Store each value on a slice
+	var attribute []string
+	var value []int64
+	var latitude []float64
+	var longitude []float32
+
+	//var num = 43.657988
+
+	attribute = append(attribute, "France")
+	value = append(value, 1)
+	latitude = append(latitude, 43.657988)
+	longitude = append(longitude, 6.928801)
+
+	//log.DefaultLogger.Info("NUM ", "request", num)
+
+	for k, v := range entity {
+		var a Attribute
+		if err := json.Unmarshal(v, &a); err == nil {
+
+			attribute = append(attribute, k)
+
+			//If we have a value data, set value, else set the object data
+			if string(a.Value) != "" {
+				//value = append(value, strings.Trim(string(a.Value), "\""))
+			} else {
+				//value = append(value, strings.Trim(string(a.Object), "\""))
+			}
+			//log.DefaultLogger.Info("location ", "request", a.Location.Coordinates)
+
+			//latitude = append(latitude, dateFormat(a.CreatedAt))
+			//longitude = append(longitude, dateFormat(a.ModifiedAt))
+		}
+	}
+
+	frame.Fields = append(frame.Fields,
+		data.NewField("Attribute", nil, attribute),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("metric", nil, []int64{2}),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("latitude", nil, latitude),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("longitude", nil, longitude),
 	)
 
 	// add the frames to the response
