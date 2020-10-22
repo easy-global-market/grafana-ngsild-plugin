@@ -23,6 +23,7 @@ type Attribute struct {
 
 type queryModel struct {
 	QueryText string `json:"queryText"`
+	Format    string `json:"format"`
 }
 
 type instanceSettings struct {

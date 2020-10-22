@@ -86,8 +86,16 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 	entity := getEntityById(qm.QueryText, token, instSetting)
 
+	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
+
+	tableResponse := transformeToTable(qm.QueryText, entity, response)
+	return tableResponse
+
+}
+
+func transformeToTable(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
-	frame := data.NewFrame(qm.QueryText)
+	frame := data.NewFrame(QueryText)
 
 	//Store each value on a slice
 	var attribute []string
