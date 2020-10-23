@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -149,42 +150,39 @@ func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, r
 	//Store each value on a slice
 	var attribute []string
 	var value []int64
-	var latitude []float64
-	var longitude []float32
+	var latitude []string
+	var longitude []string
 
-	//var num = 43.657988
-
-	attribute = append(attribute, "France")
-	value = append(value, 1)
-	latitude = append(latitude, 43.657988)
-	longitude = append(longitude, 6.928801)
-
-	//log.DefaultLogger.Info("NUM ", "request", num)
-
-	for k, v := range entity {
+	for _, v := range entity {
 		var a Attribute
 		if err := json.Unmarshal(v, &a); err == nil {
 
-			attribute = append(attribute, k)
+			if a.Type == "GeoProperty" {
+				var location Location
+				err := json.Unmarshal(a.Value, &location)
+				if err != nil {
+					log.DefaultLogger.Warn("error marshalling", "err", err)
+				}
+				//log.DefaultLogger.Info("location2 ", "request", location.Coordinates)
 
-			//If we have a value data, set value, else set the object data
-			if string(a.Value) != "" {
-				//value = append(value, strings.Trim(string(a.Value), "\""))
-			} else {
-				//value = append(value, strings.Trim(string(a.Object), "\""))
+				long := fmt.Sprintf("%f", location.Coordinates[0])
+				lat := fmt.Sprintf("%f", location.Coordinates[1])
+
+				attribute = append(attribute, "SOMETHING")
+				value = append(value, 1)
+				longitude = append(longitude, long)
+				latitude = append(latitude, lat)
+				//log.DefaultLogger.Info("TEST", "request", longitude[0])
+
 			}
-			//log.DefaultLogger.Info("location ", "request", a.Location.Coordinates)
-
-			//latitude = append(latitude, dateFormat(a.CreatedAt))
-			//longitude = append(longitude, dateFormat(a.ModifiedAt))
 		}
 	}
 
 	frame.Fields = append(frame.Fields,
-		data.NewField("Attribute", nil, attribute),
+		data.NewField("attribute", nil, attribute),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("metric", nil, []int64{2}),
+		data.NewField("metric", nil, value),
 	)
 	frame.Fields = append(frame.Fields,
 		data.NewField("latitude", nil, latitude),
@@ -192,7 +190,6 @@ func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, r
 	frame.Fields = append(frame.Fields,
 		data.NewField("longitude", nil, longitude),
 	)
-
 	// add the frames to the response
 	response.Frames = append(response.Frames, frame)
 	return response
