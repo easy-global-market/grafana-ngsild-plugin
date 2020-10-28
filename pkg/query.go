@@ -163,17 +163,15 @@ func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, r
 				if err != nil {
 					log.DefaultLogger.Warn("error marshalling", "err", err)
 				}
-				//log.DefaultLogger.Info("location2 ", "request", location.Coordinates)
+				log.DefaultLogger.Info("location ", "request", location.Coordinates)
 
 				long := fmt.Sprintf("%f", location.Coordinates[0])
 				lat := fmt.Sprintf("%f", location.Coordinates[1])
 
-				attribute = append(attribute, "SOMETHING")
+				attribute = append(attribute, QueryText)
 				value = append(value, 1)
 				longitude = append(longitude, long)
 				latitude = append(latitude, lat)
-				//log.DefaultLogger.Info("TEST", "request", longitude[0])
-
 			}
 		}
 	}
