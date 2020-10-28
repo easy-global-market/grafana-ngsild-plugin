@@ -1,7 +1,7 @@
 {
   "type": "datasource",
-  "name": "NGSI-LD plugin",
-  "id": "stellio-ngsild-plugin",
+  "name": "NGSI-LD",
+  "id": "NGSI-LD",
   "metrics": true,
   "backend": true,
   "logs": true,
