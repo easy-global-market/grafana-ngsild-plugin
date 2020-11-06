@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -81,13 +82,25 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		return response
 	}
 
-	//entityID demandé
+	//QueryText is the entityID that user set on query panel
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 
 	entity := getEntityById(qm.QueryText, token, instSetting)
 
+	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
+	if qm.Format == "worldmap" {
+		worldMapResponse := transformeToWorldMap(qm.QueryText, entity, response)
+		return worldMapResponse
+	} else {
+		tableResponse := transformeToTable(qm.QueryText, entity, response)
+		return tableResponse
+	}
+
+}
+
+func transformeToTable(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
-	frame := data.NewFrame(qm.QueryText)
+	frame := data.NewFrame(QueryText)
 
 	//Store each value on a slice
 	var attribute []string
@@ -126,6 +139,57 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		data.NewField("Modified at", nil, modifiedAt),
 	)
 
+	// add the frames to the response
+	response.Frames = append(response.Frames, frame)
+	return response
+}
+
+func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+	// create data frame response
+	frame := data.NewFrame(QueryText)
+
+	//Store each value on a slice
+	var attribute []string
+	var value []int64
+	var latitude []string
+	var longitude []string
+
+	for _, v := range entity {
+		var a Attribute
+		if err := json.Unmarshal(v, &a); err == nil {
+
+			if a.Type == "GeoProperty" {
+				var location Location
+				err := json.Unmarshal(a.Value, &location)
+				if err != nil {
+					log.DefaultLogger.Warn("error marshalling", "err", err)
+				}
+				log.DefaultLogger.Info("location ", "request", location.Coordinates)
+
+				long := fmt.Sprintf("%f", location.Coordinates[0])
+				lat := fmt.Sprintf("%f", location.Coordinates[1])
+
+				attribute = append(attribute, QueryText)
+				//it can be good to find a way to specify the attribute we whant to display as "metric field"
+				value = append(value, 1)
+				longitude = append(longitude, long)
+				latitude = append(latitude, lat)
+			}
+		}
+	}
+
+	frame.Fields = append(frame.Fields,
+		data.NewField("attribute", nil, attribute),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("metric", nil, value),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("latitude", nil, latitude),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("longitude", nil, longitude),
+	)
 	// add the frames to the response
 	response.Frames = append(response.Frames, frame)
 	return response

@@ -2,6 +2,7 @@ import { DataQuery, DataSourceJsonData } from '@grafana/data';
 
 export interface MyQuery extends DataQuery {
   queryText?: string;
+  format?: string;
 }
 
 export const defaultQuery: Partial<MyQuery> = {};
@@ -21,4 +22,9 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
  */
 export interface MySecureJsonData {
   clientSecret?: string;
+}
+
+export enum PanelQueryFormat {
+  Table = 'table',
+  WorldMap = 'worldmap',
 }

@@ -20,9 +20,14 @@ type Attribute struct {
 	Object     json.RawMessage `json:"object"`
 	Value      json.RawMessage `json:"value"`
 }
+type Location struct {
+	Type        string    `json:"type"`
+	Coordinates []float64 `json:"coordinates"`
+}
 
 type queryModel struct {
 	QueryText string `json:"queryText"`
+	Format    string `json:"format"`
 }
 
 type instanceSettings struct {
