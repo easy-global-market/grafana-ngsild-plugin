@@ -82,7 +82,7 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		return response
 	}
 
-	//entityID demandé
+	//QueryText is the entityID that user set on query panel
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 
 	entity := getEntityById(qm.QueryText, token, instSetting)
@@ -91,9 +91,10 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	if qm.Format == "worldmap" {
 		worldMapResponse := transformeToWorldMap(qm.QueryText, entity, response)
 		return worldMapResponse
+	} else {
+		tableResponse := transformeToTable(qm.QueryText, entity, response)
+		return tableResponse
 	}
-	tableResponse := transformeToTable(qm.QueryText, entity, response)
-	return tableResponse
 
 }
 
@@ -169,6 +170,7 @@ func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, r
 				lat := fmt.Sprintf("%f", location.Coordinates[1])
 
 				attribute = append(attribute, QueryText)
+				//it can be good to find a way to specify the attribute we whant to display as "metric field"
 				value = append(value, 1)
 				longitude = append(longitude, long)
 				latitude = append(latitude, lat)
