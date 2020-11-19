@@ -12,7 +12,7 @@ const FORMAT_OPTIONS: Array<SelectableValue<PanelQueryFormat>> = [
   { label: 'Table', value: PanelQueryFormat.Table },
   { label: 'World Map', value: PanelQueryFormat.WorldMap },
 ];
-
+var isWorldMap = false;
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
@@ -20,6 +20,11 @@ export class QueryEditor extends PureComponent<Props> {
     const { onChange, query } = this.props;
     onChange({ ...query, queryText: event.target.value });
     //onRunQuery();
+  };
+
+  onAttributeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, attribute: event.target.value });
   };
 
   onConfirm = (event: MouseEvent) => {
@@ -35,6 +40,11 @@ export class QueryEditor extends PureComponent<Props> {
     const { query, onChange } = this.props;
     if (option.value) {
       onChange({ ...query, format: option.value });
+      if (option.value === 'worldmap') {
+        isWorldMap = true;
+      } else {
+        isWorldMap = false;
+      }
     }
   };
 
@@ -43,17 +53,16 @@ export class QueryEditor extends PureComponent<Props> {
     const { queryText } = query;
 
     return (
-      <div className="gf-form">
-        <FormField
-          inputWidth={25}
-          labelWidth={6}
-          value={queryText || ''}
-          onChange={this.onQueryTextChange}
-          label="entityId"
-          tooltip="urn:ngsi-ld: ..."
-        />
-
+      <>
         <div className="gf-form-inline">
+          <FormField
+            inputWidth={25}
+            labelWidth={6}
+            value={queryText || ''}
+            onChange={this.onQueryTextChange}
+            label="entityId"
+            tooltip="urn:ngsi-ld: ..."
+          />
           <InlineFormLabel width={6}>Format</InlineFormLabel>
           <Select
             isSearchable={false}
@@ -62,12 +71,22 @@ export class QueryEditor extends PureComponent<Props> {
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
           />
-        </div>
 
-        <Button size="md" variant="secondary" onClick={this.onConfirm}>
-          Confirm
-        </Button>
-      </div>
+          <Button size="md" variant="secondary" onClick={this.onConfirm}>
+            Confirm
+          </Button>
+        </div>
+        {isWorldMap && (
+          <FormField
+            labelWidth={6}
+            inputWidth={20}
+            label="Attribute"
+            tooltip="optional"
+            value={query.attribute || ''}
+            onChange={this.onAttributeChange}
+          />
+        )}
+      </>
     );
   }
 }
