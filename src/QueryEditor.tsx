@@ -12,7 +12,8 @@ const FORMAT_OPTIONS: Array<SelectableValue<PanelQueryFormat>> = [
   { label: 'Table', value: PanelQueryFormat.Table },
   { label: 'World Map', value: PanelQueryFormat.WorldMap },
 ];
-var isWorldMap = false;
+var isWorldMap = true;
+
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {

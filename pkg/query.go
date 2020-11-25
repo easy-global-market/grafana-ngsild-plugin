@@ -89,7 +89,7 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {
-		worldMapResponse := transformeToWorldMap(qm.QueryText, entity, response)
+		worldMapResponse := transformeToWorldMap(qm.QueryText, qm.MapAttribute, entity, response)
 		return worldMapResponse
 	} else {
 		tableResponse := transformeToTable(qm.QueryText, entity, response)
@@ -144,19 +144,25 @@ func transformeToTable(QueryText string, entity map[string]json.RawMessage, resp
 	return response
 }
 
-func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformeToWorldMap(QueryText string, MapAttribute string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
 	frame := data.NewFrame(QueryText)
 
 	//Store each value on a slice
 	var attribute []string
-	var value []int64
+	var value []string
 	var latitude []string
 	var longitude []string
 
-	for _, v := range entity {
+	for k, v := range entity {
 		var a Attribute
 		if err := json.Unmarshal(v, &a); err == nil {
+
+			//MapAttribute is the attribute that we whant to display on the map
+			if MapAttribute != "" && MapAttribute == k {
+				attribute = append(attribute, MapAttribute)
+				value = append(value, string(a.Value))
+			}
 
 			if a.Type == "GeoProperty" {
 				var location Location
@@ -164,18 +170,19 @@ func transformeToWorldMap(QueryText string, entity map[string]json.RawMessage, r
 				if err != nil {
 					log.DefaultLogger.Warn("error marshalling", "err", err)
 				}
-				log.DefaultLogger.Info("location ", "request", location.Coordinates)
 
 				long := fmt.Sprintf("%f", location.Coordinates[0])
 				lat := fmt.Sprintf("%f", location.Coordinates[1])
 
-				attribute = append(attribute, QueryText)
-				//it can be good to find a way to specify the attribute we whant to display as "metric field"
-				value = append(value, 1)
 				longitude = append(longitude, long)
 				latitude = append(latitude, lat)
 			}
 		}
+	}
+	//If we don't need attribute, we set the entityId and value to 1 to display it anyway
+	if len(value) == 0 {
+		attribute = append(attribute, QueryText)
+		value = append(value, "1")
 	}
 
 	frame.Fields = append(frame.Fields,
