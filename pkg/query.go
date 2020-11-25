@@ -114,11 +114,23 @@ func transformeToTable(QueryText string, entity map[string]json.RawMessage, resp
 
 			attribute = append(attribute, k)
 
-			//If we have a value data, set value, else set the object data
-			if string(a.Value) != "" {
-				value = append(value, strings.Trim(string(a.Value), "\""))
+			//If attribute is a GeoProperty we set the coordinates as value
+			if a.Type == "GeoProperty" {
+				var location Location
+				err := json.Unmarshal(a.Value, &location)
+				if err != nil {
+					log.DefaultLogger.Warn("error marshalling", "err", err)
+				}
+				log.DefaultLogger.Info("location ", "request", location.Coordinates)
+				coord := fmt.Sprintf("%f", location.Coordinates)
+				value = append(value, coord)
 			} else {
-				value = append(value, strings.Trim(string(a.Object), "\""))
+				//If we have a value data, set value, else set the object data
+				if string(a.Value) != "" {
+					value = append(value, strings.Trim(string(a.Value), "\""))
+				} else {
+					value = append(value, strings.Trim(string(a.Object), "\""))
+				}
 			}
 
 			createdAt = append(createdAt, dateFormat(a.CreatedAt))
