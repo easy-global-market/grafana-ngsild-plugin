@@ -89,16 +89,16 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {
-		worldMapResponse := transformeToWorldMap(qm.QueryText, qm.MapAttribute, entity, response)
+		worldMapResponse := transformToWorldMap(qm.QueryText, qm.MapMetric, entity, response)
 		return worldMapResponse
 	} else {
-		tableResponse := transformeToTable(qm.QueryText, entity, response)
+		tableResponse := transformToTable(qm.QueryText, entity, response)
 		return tableResponse
 	}
 
 }
 
-func transformeToTable(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToTable(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
 	frame := data.NewFrame(QueryText)
 
@@ -118,14 +118,16 @@ func transformeToTable(QueryText string, entity map[string]json.RawMessage, resp
 			if a.Type == "GeoProperty" {
 				var location Location
 				err := json.Unmarshal(a.Value, &location)
-				if err != nil {
+				if err == nil {
+					log.DefaultLogger.Info("location ", "request", location.Coordinates)
+					coord := fmt.Sprintf("%f", location.Coordinates)
+					value = append(value, coord)
+				} else {
 					log.DefaultLogger.Warn("error marshalling", "err", err)
 				}
-				log.DefaultLogger.Info("location ", "request", location.Coordinates)
-				coord := fmt.Sprintf("%f", location.Coordinates)
-				value = append(value, coord)
+
 			} else {
-				//If we have a value data, set value, else set the object data
+				//if it has a value key (it’s a Property), take it, else take the object key (it’s a Relationship)
 				if string(a.Value) != "" {
 					value = append(value, strings.Trim(string(a.Value), "\""))
 				} else {
@@ -156,7 +158,7 @@ func transformeToTable(QueryText string, entity map[string]json.RawMessage, resp
 	return response
 }
 
-func transformeToWorldMap(QueryText string, MapAttribute string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToWorldMap(QueryText string, MapMetric string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
 	frame := data.NewFrame(QueryText)
 
@@ -170,9 +172,9 @@ func transformeToWorldMap(QueryText string, MapAttribute string, entity map[stri
 		var a Attribute
 		if err := json.Unmarshal(v, &a); err == nil {
 
-			//MapAttribute is the attribute that we whant to display on the map
-			if MapAttribute != "" && MapAttribute == k {
-				attribute = append(attribute, MapAttribute)
+			//MapMetric is the attribute that we want to display on the map
+			if MapMetric != "" && MapMetric == k {
+				attribute = append(attribute, MapMetric)
 				value = append(value, string(a.Value))
 			}
 

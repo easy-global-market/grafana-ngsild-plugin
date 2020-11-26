@@ -41,11 +41,7 @@ export class QueryEditor extends PureComponent<Props> {
     const { query, onChange } = this.props;
     if (option.value) {
       onChange({ ...query, format: option.value });
-      if (option.value === 'worldmap') {
-        isWorldMap = true;
-      } else {
-        isWorldMap = false;
-      }
+      isWorldMap = option.value === 'worldmap';
     }
   };
 
@@ -62,7 +58,7 @@ export class QueryEditor extends PureComponent<Props> {
             value={queryText || ''}
             onChange={this.onQueryTextChange}
             label="entityId"
-            tooltip="urn:ngsi-ld: ..."
+            placeholder="urn:ngsi-ld: ..."
           />
           <InlineFormLabel width={6}>Format</InlineFormLabel>
           <Select
@@ -82,7 +78,6 @@ export class QueryEditor extends PureComponent<Props> {
             labelWidth={6}
             inputWidth={20}
             label="Attribute"
-            tooltip="optional"
             value={query.attribute || ''}
             onChange={this.onAttributeChange}
           />
