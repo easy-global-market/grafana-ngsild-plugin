@@ -17,7 +17,7 @@ type Attribute struct {
 	Type       string          `json:"type"`
 	CreatedAt  string          `json:"createdAt"`
 	ModifiedAt string          `json:"modifiedAt"`
-	Object     json.RawMessage `json:"object"`
+	Object     string          `json:"object"`
 	Value      json.RawMessage `json:"value"`
 }
 type Location struct {
