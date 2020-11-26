@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -129,9 +128,9 @@ func transformToTable(QueryText string, entity map[string]json.RawMessage, respo
 			} else {
 				//if it has a value key (it’s a Property), take it, else take the object key (it’s a Relationship)
 				if string(a.Value) != "" {
-					value = append(value, strings.Trim(string(a.Value), "\""))
+					value = append(value, string(a.Value))
 				} else {
-					value = append(value, strings.Trim(string(a.Object), "\""))
+					value = append(value, string(a.Object))
 				}
 			}
 
