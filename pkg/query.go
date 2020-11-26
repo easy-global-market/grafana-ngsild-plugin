@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -125,13 +126,10 @@ func transformToTable(QueryText string, entity map[string]json.RawMessage, respo
 					log.DefaultLogger.Warn("error marshalling", "err", err)
 				}
 
-			} else {
-				//if it has a value key (it’s a Property), take it, else take the object key (it’s a Relationship)
-				if string(a.Value) != "" {
-					value = append(value, string(a.Value))
-				} else {
-					value = append(value, string(a.Object))
-				}
+			} else if a.Type == "Property" {
+				value = append(value, strings.Trim(string(a.Value), "\""))
+			} else { //a.Type == Relationship
+				value = append(value, strings.Trim(string(a.Object), "\""))
 			}
 
 			createdAt = append(createdAt, dateFormat(a.CreatedAt))
@@ -192,7 +190,7 @@ func transformToWorldMap(QueryText string, MapMetric string, entity map[string]j
 			}
 		}
 	}
-	//If we don't need attribute, we set the entityId and value to 1 to display it anyway
+	//If no specific attribute has been asked for, we set the entityId and value to 1 to display it anyway
 	if len(value) == 0 {
 		attribute = append(attribute, QueryText)
 		value = append(value, "1")

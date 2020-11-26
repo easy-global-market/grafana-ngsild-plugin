@@ -75,9 +75,9 @@ export class QueryEditor extends PureComponent<Props> {
         </div>
         {isWorldMap && (
           <FormField
-            labelWidth={6}
+            labelWidth={11}
             inputWidth={20}
-            label="Attribute"
+            label="Attribute to use as a metric"
             value={query.attribute || ''}
             onChange={this.onAttributeChange}
           />
