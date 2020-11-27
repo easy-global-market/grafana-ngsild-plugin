@@ -128,7 +128,7 @@ func transformToTable(QueryText string, entity map[string]json.RawMessage, respo
 
 			} else if a.Type == "Property" {
 				value = append(value, strings.Trim(string(a.Value), "\""))
-			} else { //a.Type == Relationship
+			} else if a.Type == "Relationship" {
 				value = append(value, string(a.Object))
 			}
 
