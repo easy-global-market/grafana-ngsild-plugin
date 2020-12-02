@@ -84,6 +84,8 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 	//QueryText is the entityID that user set on query panel
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
+	//Context is the dashboard variable named : context
+	log.DefaultLogger.Info("Context ", "request", qm.Context)
 
 	entity := getEntityById(qm.QueryText, token, instSetting)
 

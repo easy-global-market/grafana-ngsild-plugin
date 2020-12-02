@@ -29,6 +29,7 @@ type queryModel struct {
 	QueryText string `json:"queryText"`
 	Format    string `json:"format"`
 	MapMetric string `json:"attribute"`
+	Context   string `json:"context"`
 }
 
 type instanceSettings struct {

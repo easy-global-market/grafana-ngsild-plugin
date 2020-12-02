@@ -4,6 +4,7 @@ export interface MyQuery extends DataQuery {
   queryText?: string;
   format?: string;
   attribute?: string;
+  context?: string;
 }
 
 export const defaultQuery: Partial<MyQuery> = {};

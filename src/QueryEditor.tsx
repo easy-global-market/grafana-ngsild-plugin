@@ -29,7 +29,8 @@ export class QueryEditor extends PureComponent<Props> {
   };
 
   onConfirm = (event: MouseEvent) => {
-    const { onRunQuery } = this.props;
+    const { onChange, query, onRunQuery } = this.props;
+    onChange({ ...query, context: '$context' });
     onRunQuery();
   };
 

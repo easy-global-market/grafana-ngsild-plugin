@@ -13,6 +13,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       ...query,
       queryText: query.queryText ? templateSrv.replace(query.queryText) : '',
       attribute: query.attribute ? templateSrv.replace(query.attribute) : '',
+      context: query.context ? templateSrv.replace(query.context) : '',
     };
   }
 }
