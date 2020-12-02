@@ -54,11 +54,11 @@ export class QueryEditor extends PureComponent<Props> {
       <>
         <div className="gf-form-inline">
           <FormField
-            inputWidth={25}
-            labelWidth={6}
+            labelWidth={11}
+            inputWidth={20}
             value={queryText || ''}
             onChange={this.onQueryTextChange}
-            label="entityId"
+            label="Entity Identifier"
             placeholder="urn:ngsi-ld: ..."
           />
           <InlineFormLabel width={6}>Format</InlineFormLabel>
