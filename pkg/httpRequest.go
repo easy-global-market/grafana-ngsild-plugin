@@ -89,11 +89,11 @@ func getEntityById(id string, context string, token string, instSetting *instanc
 	return e
 }
 
-func getEntitesByType(entityType string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
+func getEntitesByType(entityType string, valueFilterQuery string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
-	resource := "/ngsi-ld/v1/entities?type=" + entityType //+ "&options=sysAttrs"
+	resource := "/ngsi-ld/v1/entities?type=" + entityType + "&options=sysAttrs"
 
 	u, _ := url.ParseRequestURI(contextBrokerUrl + resource)
 	urlStr := u.String()
@@ -107,13 +107,12 @@ func getEntitesByType(entityType string, context string, token string, instSetti
 		r.Header.Set("Link", context)
 	}
 
-	q := r.URL.Query()          // Get a copy of the query values.
-	q.Add("q", "maxFlow>=1300") // Add a new value to the set.
-	//q.Add("q", "waterConsumption>182110") // Add a new value to the set.
-	r.URL.RawQuery = q.Encode()
-
-	//log.DefaultLogger.Info("URL:", "request", urlStr)
-	//log.DefaultLogger.Info("query value:", "request", q)
+	//if the user specified any query parameters, we add them to the query
+	if valueFilterQuery != "" {
+		q := r.URL.Query()
+		q.Add("q", valueFilterQuery)
+		r.URL.RawQuery = q.Encode()
+	}
 
 	resp, _ := client.Do(r)
 

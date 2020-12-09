@@ -39,6 +39,11 @@ export class QueryEditor extends PureComponent<Props> {
     onChange({ ...query, entityType: event.target.value });
   };
 
+  onValueFilterQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, ValueFilterQuery: event.target.value });
+  };
+
   getFormatOption = () => {
     return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   };
@@ -53,7 +58,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { queryText, entityType } = query;
+    const { queryText, entityType, ValueFilterQuery } = query;
 
     return (
       <>
@@ -79,13 +84,24 @@ export class QueryEditor extends PureComponent<Props> {
             Confirm
           </Button>
         </div>
-        <FormField
-          labelWidth={11}
-          inputWidth={20}
-          value={entityType || ''}
-          onChange={this.onEntityTypeChange}
-          label="Entity Type"
-        />
+        <div className="gf-form-inline">
+          <FormField
+            labelWidth={11}
+            inputWidth={20}
+            value={entityType || ''}
+            onChange={this.onEntityTypeChange}
+            label="Entity Type"
+          />
+          <FormField
+            labelWidth={11}
+            inputWidth={20}
+            value={ValueFilterQuery || ''}
+            onChange={this.onValueFilterQueryChange}
+            tooltip="Values separated by semicolon"
+            placeholder="minValue>1;maxValue=5"
+            label="Value Filter Query"
+          />
+        </div>
         {isWorldMap && (
           <FormField
             labelWidth={11}

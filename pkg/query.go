@@ -88,22 +88,14 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	log.DefaultLogger.Info("Context ", "request", qm.Context)
 	//EntityType is the EntityType that user set on query panel
 	log.DefaultLogger.Info("EntityType ", "request", qm.EntityType)
+	//ValueFilterQuery to add in request
+	log.DefaultLogger.Info("ValueFilterQuery ", "request", qm.ValueFilterQuery)
 
 	var entity []map[string]json.RawMessage
 	if qm.QueryText != "" {
 		entity = getEntityById(qm.QueryText, qm.Context, token, instSetting)
 	} else {
-		entity = getEntitesByType(qm.EntityType, qm.Context, token, instSetting)
-		// arrayEntity := getEntitesByType(qm.EntityType, qm.Context, token, instSetting)
-		// var a []Attribute
-		// if err := json.Unmarshal(arrayEntity, &a); err != nil {
-		// 	log.DefaultLogger.Warn("error marshalling", "err", err)
-		// }
-		// for _, val := range a {
-		// 	log.DefaultLogger.Info("val.Id ", "request", val.Id)
-		// 	log.DefaultLogger.Info("val.Type ", "request", val.Type)
-
-		// }
+		entity = getEntitesByType(qm.EntityType, qm.ValueFilterQuery, qm.Context, token, instSetting)
 	}
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
