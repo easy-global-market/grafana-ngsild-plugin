@@ -34,6 +34,11 @@ export class QueryEditor extends PureComponent<Props> {
     onRunQuery();
   };
 
+  onEntityTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, entityType: event.target.value });
+  };
+
   getFormatOption = () => {
     return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   };
@@ -48,7 +53,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { queryText } = query;
+    const { queryText, entityType } = query;
 
     return (
       <>
@@ -74,6 +79,13 @@ export class QueryEditor extends PureComponent<Props> {
             Confirm
           </Button>
         </div>
+        <FormField
+          labelWidth={11}
+          inputWidth={20}
+          value={entityType || ''}
+          onChange={this.onEntityTypeChange}
+          label="Entity Type"
+        />
         {isWorldMap && (
           <FormField
             labelWidth={11}

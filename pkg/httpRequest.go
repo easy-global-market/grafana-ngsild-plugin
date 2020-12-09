@@ -49,7 +49,7 @@ func getToken(instSetting *instanceSettings) string {
 
 }
 
-func getEntityById(id string, token string, instSetting *instanceSettings) map[string]json.RawMessage {
+func getEntityById(id string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
@@ -63,6 +63,10 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 
 	r.Header.Add("Authorization", bToken)
 
+	if context != "$context" {
+		r.Header.Set("Link", context)
+	}
+
 	resp, _ := client.Do(r)
 
 	buf := new(strings.Builder)
@@ -74,12 +78,59 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 	log.DefaultLogger.Info("response Status:", "request", resp.Status)
 	log.DefaultLogger.Info("buffer :", "request", buf.String())
 
-	in := []byte(buf.String())
+	in := []byte("[" + buf.String() + "]")
 
-	var e map[string]json.RawMessage
+	var e []map[string]json.RawMessage
 
 	if err := json.Unmarshal(in, &e); err != nil {
 		log.DefaultLogger.Info("unmarshal json error :", err)
+	}
+
+	return e
+}
+
+func getEntitesByType(entityType string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
+
+	bToken := "Bearer " + token
+	contextBrokerUrl := instSetting.contextBrokerUrl
+	resource := "/ngsi-ld/v1/entities?type=" + entityType //+ "&options=sysAttrs"
+
+	u, _ := url.ParseRequestURI(contextBrokerUrl + resource)
+	urlStr := u.String()
+
+	client := &http.Client{}
+	r, _ := http.NewRequest("GET", urlStr, nil)
+
+	r.Header.Add("Authorization", bToken)
+
+	if context != "$context" {
+		r.Header.Set("Link", context)
+	}
+
+	q := r.URL.Query()          // Get a copy of the query values.
+	q.Add("q", "maxFlow>=1300") // Add a new value to the set.
+	//q.Add("q", "waterConsumption>182110") // Add a new value to the set.
+	r.URL.RawQuery = q.Encode()
+
+	//log.DefaultLogger.Info("URL:", "request", urlStr)
+	//log.DefaultLogger.Info("query value:", "request", q)
+
+	resp, _ := client.Do(r)
+
+	buf := new(strings.Builder)
+	n, err := io.Copy(buf, resp.Body)
+	if err != nil {
+		log.DefaultLogger.Warn("err", err)
+		log.DefaultLogger.Info("n:", n)
+	}
+	log.DefaultLogger.Info("response Status entitiesByType:", "request", resp.Status)
+	log.DefaultLogger.Info("buffer :", "request", buf.String())
+
+	in := []byte(buf.String())
+	var e []map[string]json.RawMessage
+
+	if err := json.Unmarshal(in, &e); err != nil {
+		log.DefaultLogger.Info("unmarshal json error entitiesByType :", err)
 	}
 
 	return e

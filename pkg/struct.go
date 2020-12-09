@@ -26,10 +26,11 @@ type Location struct {
 }
 
 type queryModel struct {
-	QueryText string `json:"queryText"`
-	Format    string `json:"format"`
-	MapMetric string `json:"attribute"`
-	Context   string `json:"context"`
+	QueryText  string `json:"queryText"`
+	Format     string `json:"format"`
+	MapMetric  string `json:"attribute"`
+	Context    string `json:"context"`
+	EntityType string `json:"entityType"`
 }
 
 type instanceSettings struct {

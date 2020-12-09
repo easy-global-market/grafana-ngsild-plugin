@@ -86,8 +86,25 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
 	//Context is the dashboard variable named : context
 	log.DefaultLogger.Info("Context ", "request", qm.Context)
+	//EntityType is the EntityType that user set on query panel
+	log.DefaultLogger.Info("EntityType ", "request", qm.EntityType)
 
-	entity := getEntityById(qm.QueryText, token, instSetting)
+	var entity []map[string]json.RawMessage
+	if qm.QueryText != "" {
+		entity = getEntityById(qm.QueryText, qm.Context, token, instSetting)
+	} else {
+		entity = getEntitesByType(qm.EntityType, qm.Context, token, instSetting)
+		// arrayEntity := getEntitesByType(qm.EntityType, qm.Context, token, instSetting)
+		// var a []Attribute
+		// if err := json.Unmarshal(arrayEntity, &a); err != nil {
+		// 	log.DefaultLogger.Warn("error marshalling", "err", err)
+		// }
+		// for _, val := range a {
+		// 	log.DefaultLogger.Info("val.Id ", "request", val.Id)
+		// 	log.DefaultLogger.Info("val.Type ", "request", val.Type)
+
+		// }
+	}
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {
@@ -100,7 +117,7 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 
 }
 
-func transformToTable(QueryText string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToTable(QueryText string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
 	frame := data.NewFrame(QueryText)
 
@@ -110,32 +127,34 @@ func transformToTable(QueryText string, entity map[string]json.RawMessage, respo
 	var createdAt []string
 	var modifiedAt []string
 
-	for k, v := range entity {
-		var a Attribute
-		if err := json.Unmarshal(v, &a); err == nil {
+	for _, element := range entity {
+		for k, v := range element {
+			var a Attribute
+			if err := json.Unmarshal(v, &a); err == nil {
 
-			attribute = append(attribute, k)
+				attribute = append(attribute, k)
 
-			//If attribute is a GeoProperty we set the coordinates as value
-			if a.Type == "GeoProperty" {
-				var location Location
-				err := json.Unmarshal(a.Value, &location)
-				if err == nil {
-					log.DefaultLogger.Info("location ", "request", location.Coordinates)
-					coord := fmt.Sprintf("%f", location.Coordinates)
-					value = append(value, coord)
-				} else {
-					log.DefaultLogger.Warn("error marshalling", "err", err)
+				//If attribute is a GeoProperty we set the coordinates as value
+				if a.Type == "GeoProperty" {
+					var location Location
+					err := json.Unmarshal(a.Value, &location)
+					if err == nil {
+						log.DefaultLogger.Info("location ", "request", location.Coordinates)
+						coord := fmt.Sprintf("%f", location.Coordinates)
+						value = append(value, coord)
+					} else {
+						log.DefaultLogger.Warn("error marshalling", "err", err)
+					}
+
+				} else if a.Type == "Property" {
+					value = append(value, strings.Trim(string(a.Value), "\""))
+				} else if a.Type == "Relationship" {
+					value = append(value, string(a.Object))
 				}
 
-			} else if a.Type == "Property" {
-				value = append(value, strings.Trim(string(a.Value), "\""))
-			} else if a.Type == "Relationship" {
-				value = append(value, string(a.Object))
+				createdAt = append(createdAt, dateFormat(a.CreatedAt))
+				modifiedAt = append(modifiedAt, dateFormat(a.ModifiedAt))
 			}
-
-			createdAt = append(createdAt, dateFormat(a.CreatedAt))
-			modifiedAt = append(modifiedAt, dateFormat(a.ModifiedAt))
 		}
 	}
 
@@ -157,7 +176,7 @@ func transformToTable(QueryText string, entity map[string]json.RawMessage, respo
 	return response
 }
 
-func transformToWorldMap(QueryText string, MapMetric string, entity map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToWorldMap(QueryText string, MapMetric string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
 	frame := data.NewFrame(QueryText)
 
@@ -167,31 +186,34 @@ func transformToWorldMap(QueryText string, MapMetric string, entity map[string]j
 	var latitude []string
 	var longitude []string
 
-	for k, v := range entity {
-		var a Attribute
-		if err := json.Unmarshal(v, &a); err == nil {
+	for _, element := range entity {
+		for k, v := range element {
+			var a Attribute
+			if err := json.Unmarshal(v, &a); err == nil {
 
-			//MapMetric is the attribute that we want to display on the map
-			if MapMetric != "" && MapMetric == k {
-				attribute = append(attribute, MapMetric)
-				value = append(value, string(a.Value))
-			}
-
-			if a.Type == "GeoProperty" {
-				var location Location
-				err := json.Unmarshal(a.Value, &location)
-				if err != nil {
-					log.DefaultLogger.Warn("error marshalling", "err", err)
+				//MapMetric is the attribute that we want to display on the map
+				if MapMetric != "" && MapMetric == k {
+					attribute = append(attribute, MapMetric)
+					value = append(value, string(a.Value))
 				}
 
-				long := fmt.Sprintf("%f", location.Coordinates[0])
-				lat := fmt.Sprintf("%f", location.Coordinates[1])
+				if a.Type == "GeoProperty" {
+					var location Location
+					err := json.Unmarshal(a.Value, &location)
+					if err != nil {
+						log.DefaultLogger.Warn("error marshalling", "err", err)
+					}
 
-				longitude = append(longitude, long)
-				latitude = append(latitude, lat)
+					long := fmt.Sprintf("%f", location.Coordinates[0])
+					lat := fmt.Sprintf("%f", location.Coordinates[1])
+
+					longitude = append(longitude, long)
+					latitude = append(latitude, lat)
+				}
 			}
 		}
 	}
+
 	//If no specific attribute has been asked for, we set the entityId and value to 1 to display it anyway
 	if len(value) == 0 {
 		attribute = append(attribute, QueryText)
