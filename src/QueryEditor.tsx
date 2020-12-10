@@ -29,14 +29,13 @@ export class QueryEditor extends PureComponent<Props> {
   };
 
   onConfirm = (event: MouseEvent) => {
-    const { onChange, query, onRunQuery } = this.props;
-    onChange({ ...query, context: '$context' });
+    const { onRunQuery } = this.props;
     onRunQuery();
   };
 
   onEntityTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
-    onChange({ ...query, entityType: event.target.value });
+    onChange({ ...query, entityType: event.target.value, context: '$context' });
   };
 
   onValueFilterQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
