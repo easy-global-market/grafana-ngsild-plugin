@@ -203,13 +203,14 @@ func transformToWorldMap(QueryText string, MapMetric string, entity []map[string
 					latitude = append(latitude, lat)
 				}
 			}
-		}
-	}
+			//If no specific attribute has been asked for, we set the entityId and value to 1 to display it anyway
+			if MapMetric == "" && k == "id" {
+				attribute = append(attribute, strings.Trim(string(v), "\""))
+				value = append(value, "1")
+			}
 
-	//If no specific attribute has been asked for, we set the entityId and value to 1 to display it anyway
-	if len(value) == 0 {
-		attribute = append(attribute, QueryText)
-		value = append(value, "1")
+		}
+
 	}
 
 	frame.Fields = append(frame.Fields,

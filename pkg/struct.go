@@ -14,6 +14,7 @@ type Token struct {
 	Scope              string `json:"scope"`
 }
 type Attribute struct {
+	Id         string          `json:"id"`
 	Type       string          `json:"type"`
 	CreatedAt  string          `json:"createdAt"`
 	ModifiedAt string          `json:"modifiedAt"`
