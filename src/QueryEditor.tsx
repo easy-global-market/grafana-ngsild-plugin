@@ -17,9 +17,9 @@ var isWorldMap = true;
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
-  onQueryTextChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onEntityIdChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
-    onChange({ ...query, queryText: event.target.value });
+    onChange({ ...query, entityId: event.target.value });
     //onRunQuery();
   };
 
@@ -57,7 +57,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { queryText, entityType, ValueFilterQuery } = query;
+    const { entityId, entityType, ValueFilterQuery } = query;
 
     return (
       <>
@@ -65,8 +65,8 @@ export class QueryEditor extends PureComponent<Props> {
           <FormField
             labelWidth={11}
             inputWidth={20}
-            value={queryText || ''}
-            onChange={this.onQueryTextChange}
+            value={entityId || ''}
+            onChange={this.onEntityIdChange}
             label="Entity Identifier"
             placeholder="urn:ngsi-ld: ..."
           />
@@ -96,7 +96,7 @@ export class QueryEditor extends PureComponent<Props> {
             inputWidth={20}
             value={ValueFilterQuery || ''}
             onChange={this.onValueFilterQueryChange}
-            tooltip="Values separated by semicolon"
+            tooltip="An expression conform to the NGSI-LD query language"
             placeholder="minValue>1;maxValue=5"
             label="Value Filter Query"
           />

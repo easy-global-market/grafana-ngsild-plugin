@@ -14,7 +14,6 @@ type Token struct {
 	Scope              string `json:"scope"`
 }
 type Attribute struct {
-	Id         string          `json:"id"`
 	Type       string          `json:"type"`
 	CreatedAt  string          `json:"createdAt"`
 	ModifiedAt string          `json:"modifiedAt"`
@@ -27,7 +26,7 @@ type Location struct {
 }
 
 type queryModel struct {
-	QueryText        string `json:"queryText"`
+	EntityId         string `json:"entityId"`
 	Format           string `json:"format"`
 	MapMetric        string `json:"attribute"`
 	Context          string `json:"context"`

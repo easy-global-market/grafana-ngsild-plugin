@@ -11,7 +11,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const templateSrv = getTemplateSrv();
     return {
       ...query,
-      queryText: query.queryText ? templateSrv.replace(query.queryText) : '',
+      entityId: query.entityId ? templateSrv.replace(query.entityId) : '',
       attribute: query.attribute ? templateSrv.replace(query.attribute) : '',
       context: query.context ? templateSrv.replace(query.context) : '',
     };

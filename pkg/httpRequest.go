@@ -78,6 +78,7 @@ func getEntityById(id string, context string, token string, instSetting *instanc
 	log.DefaultLogger.Info("response Status:", "request", resp.Status)
 	log.DefaultLogger.Info("buffer :", "request", buf.String())
 
+	//We set the format as a list to have the same format than when you search for entities
 	in := []byte("[" + buf.String() + "]")
 
 	var e []map[string]json.RawMessage

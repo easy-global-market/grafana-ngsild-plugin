@@ -82,36 +82,27 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		return response
 	}
 
-	//QueryText is the entityID that user set on query panel
-	log.DefaultLogger.Info("Query text ", "request", qm.QueryText)
-	//Context is the dashboard variable named : context
-	log.DefaultLogger.Info("Context ", "request", qm.Context)
-	//EntityType is the EntityType that user set on query panel
-	log.DefaultLogger.Info("EntityType ", "request", qm.EntityType)
-	//ValueFilterQuery to add in request
-	log.DefaultLogger.Info("ValueFilterQuery ", "request", qm.ValueFilterQuery)
-
 	var entity []map[string]json.RawMessage
-	if qm.QueryText != "" {
-		entity = getEntityById(qm.QueryText, qm.Context, token, instSetting)
+	if qm.EntityId != "" {
+		entity = getEntityById(qm.EntityId, qm.Context, token, instSetting)
 	} else {
 		entity = getEntitesByType(qm.EntityType, qm.ValueFilterQuery, qm.Context, token, instSetting)
 	}
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {
-		worldMapResponse := transformToWorldMap(qm.QueryText, qm.MapMetric, entity, response)
+		worldMapResponse := transformToWorldMap(qm.EntityId, qm.MapMetric, entity, response)
 		return worldMapResponse
 	} else {
-		tableResponse := transformToTable(qm.QueryText, entity, response)
+		tableResponse := transformToTable(qm.EntityId, entity, response)
 		return tableResponse
 	}
 
 }
 
-func transformToTable(QueryText string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToTable(EntityId string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
-	frame := data.NewFrame(QueryText)
+	frame := data.NewFrame(EntityId)
 
 	//Store each value on a slice
 	var attribute []string
@@ -168,9 +159,9 @@ func transformToTable(QueryText string, entity []map[string]json.RawMessage, res
 	return response
 }
 
-func transformToWorldMap(QueryText string, MapMetric string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+func transformToWorldMap(EntityId string, MapMetric string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
 	// create data frame response
-	frame := data.NewFrame(QueryText)
+	frame := data.NewFrame(EntityId)
 
 	//Store each value on a slice
 	var attribute []string
