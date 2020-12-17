@@ -88,6 +88,9 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 	} else {
 		entity = getEntitesByType(qm.EntityType, qm.ValueFilterQuery, qm.Context, token, instSetting)
 	}
+	log.DefaultLogger.Info("EntityID ", "request", qm.EntityId)
+	log.DefaultLogger.Info("TYPE ", "request", qm.EntityType)
+	log.DefaultLogger.Info("CONTEXT ", "request", qm.Context)
 
 	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {

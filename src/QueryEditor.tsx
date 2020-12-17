@@ -17,6 +17,11 @@ var isWorldMap = true;
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
+  //Init context with "$context" to replace it with dashboard variable
+  componentDidMount() {
+    this.onContextChange;
+  }
+
   onEntityIdChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
     onChange({ ...query, entityId: event.target.value });
@@ -53,6 +58,11 @@ export class QueryEditor extends PureComponent<Props> {
       onChange({ ...query, format: option.value });
       isWorldMap = option.value === 'worldmap';
     }
+  };
+
+  onContextChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, context: '$context' });
   };
 
   render() {
