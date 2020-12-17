@@ -104,6 +104,7 @@ func getEntitesByType(entityType string, valueFilterQuery string, context string
 
 	r.Header.Add("Authorization", bToken)
 
+	//if there is a dashboard variable named "context"
 	if context != "$context" {
 		r.Header.Set("Link", context)
 	}
