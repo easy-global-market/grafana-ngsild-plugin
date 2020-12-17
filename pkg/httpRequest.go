@@ -63,6 +63,7 @@ func getEntityById(id string, context string, token string, instSetting *instanc
 
 	r.Header.Add("Authorization", bToken)
 
+	//if there is a dashboard variable named "context"
 	if context != "$context" {
 		r.Header.Set("Link", context)
 	}
