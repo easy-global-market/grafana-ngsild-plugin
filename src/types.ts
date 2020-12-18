@@ -6,7 +6,7 @@ export interface MyQuery extends DataQuery {
   attribute?: string;
   context?: string;
   entityType?: string;
-  ValueFilterQuery?: string;
+  valueFilterQuery?: string;
 }
 
 export const defaultQuery: Partial<MyQuery> = {};

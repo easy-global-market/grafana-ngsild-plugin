@@ -65,6 +65,7 @@ func getEntityById(id string, context string, token string, instSetting *instanc
 
 	//if there is a dashboard variable named "context"
 	if context != "$context" {
+		context = `<` + context + `>;` + `rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`
 		r.Header.Set("Link", context)
 	}
 
@@ -107,6 +108,7 @@ func getEntitesByType(entityType string, valueFilterQuery string, context string
 
 	//if there is a dashboard variable named "context"
 	if context != "$context" {
+		context = `<` + context + `>;` + `rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`
 		r.Header.Set("Link", context)
 	}
 

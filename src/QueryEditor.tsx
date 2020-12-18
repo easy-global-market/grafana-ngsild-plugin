@@ -45,7 +45,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   onValueFilterQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
-    onChange({ ...query, ValueFilterQuery: event.target.value });
+    onChange({ ...query, valueFilterQuery: event.target.value });
   };
 
   getFormatOption = () => {
@@ -67,7 +67,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { entityId, entityType, ValueFilterQuery } = query;
+    const { entityId, entityType, valueFilterQuery } = query;
 
     return (
       <>
@@ -104,7 +104,7 @@ export class QueryEditor extends PureComponent<Props> {
           <FormField
             labelWidth={11}
             inputWidth={20}
-            value={ValueFilterQuery || ''}
+            value={valueFilterQuery || ''}
             onChange={this.onValueFilterQueryChange}
             tooltip="An expression conform to the NGSI-LD query language"
             placeholder="minValue>1;maxValue=5"
