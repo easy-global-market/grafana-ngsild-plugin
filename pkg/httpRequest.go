@@ -49,7 +49,7 @@ func getToken(instSetting *instanceSettings) string {
 
 }
 
-func getEntityById(id string, token string, instSetting *instanceSettings) map[string]json.RawMessage {
+func getEntityById(id string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
@@ -63,6 +63,12 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 
 	r.Header.Add("Authorization", bToken)
 
+	//if there is a dashboard variable named "context"
+	if context != "$context" {
+		context = `<` + context + `>;` + `rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`
+		r.Header.Set("Link", context)
+	}
+
 	resp, _ := client.Do(r)
 
 	buf := new(strings.Builder)
@@ -74,12 +80,61 @@ func getEntityById(id string, token string, instSetting *instanceSettings) map[s
 	log.DefaultLogger.Info("response Status:", "request", resp.Status)
 	log.DefaultLogger.Info("buffer :", "request", buf.String())
 
-	in := []byte(buf.String())
+	//We set the format as a list to have the same format than when you search for entities
+	in := []byte("[" + buf.String() + "]")
 
-	var e map[string]json.RawMessage
+	var e []map[string]json.RawMessage
 
 	if err := json.Unmarshal(in, &e); err != nil {
 		log.DefaultLogger.Info("unmarshal json error :", err)
+	}
+
+	return e
+}
+
+func getEntitesByType(entityType string, valueFilterQuery string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
+
+	bToken := "Bearer " + token
+	contextBrokerUrl := instSetting.contextBrokerUrl
+	resource := "/ngsi-ld/v1/entities?type=" + entityType + "&options=sysAttrs"
+
+	u, _ := url.ParseRequestURI(contextBrokerUrl + resource)
+	urlStr := u.String()
+
+	client := &http.Client{}
+	r, _ := http.NewRequest("GET", urlStr, nil)
+
+	r.Header.Add("Authorization", bToken)
+
+	//if there is a dashboard variable named "context"
+	if context != "$context" {
+		context = `<` + context + `>;` + `rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`
+		r.Header.Set("Link", context)
+	}
+
+	//if the user specified any query parameters, we add them to the query
+	if valueFilterQuery != "" {
+		q := r.URL.Query()
+		q.Add("q", valueFilterQuery)
+		r.URL.RawQuery = q.Encode()
+	}
+
+	resp, _ := client.Do(r)
+
+	buf := new(strings.Builder)
+	n, err := io.Copy(buf, resp.Body)
+	if err != nil {
+		log.DefaultLogger.Warn("err", err)
+		log.DefaultLogger.Info("n:", n)
+	}
+	log.DefaultLogger.Info("response Status entitiesByType:", "request", resp.Status)
+	log.DefaultLogger.Info("buffer :", "request", buf.String())
+
+	in := []byte(buf.String())
+	var e []map[string]json.RawMessage
+
+	if err := json.Unmarshal(in, &e); err != nil {
+		log.DefaultLogger.Info("unmarshal json error entitiesByType :", err)
 	}
 
 	return e
