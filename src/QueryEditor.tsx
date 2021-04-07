@@ -5,6 +5,12 @@ import { LegacyForms, Button, InlineFormLabel, Select } from '@grafana/ui';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from './DataSource';
 import { defaultQuery, MyDataSourceOptions, MyQuery, PanelQueryFormat } from './types';
+import { getTemplateSrv } from '@grafana/runtime';
+import { VariableModel } from '@grafana/data/types/templateVars';
+interface QueryContext {
+  query?: string;
+  name: string;
+}
 
 const { FormField } = LegacyForms;
 
@@ -12,14 +18,18 @@ const FORMAT_OPTIONS: Array<SelectableValue<PanelQueryFormat>> = [
   { label: 'Table', value: PanelQueryFormat.Table },
   { label: 'World Map', value: PanelQueryFormat.WorldMap },
 ];
-var isWorldMap = true;
+let isWorldMap = true;
+let variables = (getTemplateSrv().getVariables() as unknown) as Array<VariableModel & QueryContext>;
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 export class QueryEditor extends PureComponent<Props> {
-  //Init context with "$context" to replace it with dashboard variable
-  componentDidMount() {
-    this.onContextChange;
+  componentDidUpdate() {
+    let currentVariables = getTemplateSrv().getVariables();
+    if (currentVariables && currentVariables !== variables) {
+      variables = currentVariables;
+      this.isContextSet(currentVariables);
+    }
   }
 
   onEntityIdChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +50,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   onEntityTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onChange, query } = this.props;
-    onChange({ ...query, entityType: event.target.value, context: '$context' });
+    onChange({ ...query, entityType: event.target.value });
   };
 
   onValueFilterQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -60,10 +70,21 @@ export class QueryEditor extends PureComponent<Props> {
     }
   };
 
-  onContextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { onChange, query } = this.props;
-    onChange({ ...query, context: '$context' });
-  };
+  //Check if a variable named 'context' exists
+  isContextSet(currentVariables: QueryContext[]) {
+    let found = false;
+    currentVariables.forEach((variable: QueryContext) => {
+      if (variable.name === 'context') {
+        found = true;
+        //set the content of 'context' dashboard variable to the context variable to get it in backend
+        this.props.query.context = variable.query ? variable.query : '';
+      }
+    });
+    if (!found) {
+      this.props.query.context = '';
+      throw new Error('Create a dashboard variable named "context" with your context');
+    }
+  }
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
