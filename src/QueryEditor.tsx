@@ -22,7 +22,6 @@ let isWorldMap = true;
 let variables = (getTemplateSrv().getVariables() as unknown) as Array<VariableModel & QueryContext>;
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
-
 export class QueryEditor extends PureComponent<Props> {
   componentDidUpdate() {
     let currentVariables = getTemplateSrv().getVariables();
@@ -58,6 +57,11 @@ export class QueryEditor extends PureComponent<Props> {
     onChange({ ...query, valueFilterQuery: event.target.value });
   };
 
+  onMetadataSelectorChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, metadataSelector: event.target.value });
+  };
+
   getFormatOption = () => {
     return FORMAT_OPTIONS.find(v => v.value === this.props.query.format);
   };
@@ -88,10 +92,10 @@ export class QueryEditor extends PureComponent<Props> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { entityId, entityType, valueFilterQuery } = query;
+    const { entityId, entityType, valueFilterQuery, metadataSelector } = query;
 
     return (
-      <>
+      <div>
         <div className="gf-form-inline">
           <FormField
             labelWidth={11}
@@ -109,10 +113,6 @@ export class QueryEditor extends PureComponent<Props> {
             onChange={this.onFormatChange}
             value={this.getFormatOption()}
           />
-
-          <Button size="md" variant="secondary" onClick={this.onConfirm}>
-            Confirm
-          </Button>
         </div>
         <div className="gf-form-inline">
           <FormField
@@ -141,7 +141,19 @@ export class QueryEditor extends PureComponent<Props> {
             onChange={this.onAttributeChange}
           />
         )}
-      </>
+        <div className="gf-form-inline">
+          <FormField
+            labelWidth={11}
+            inputWidth={20}
+            value={metadataSelector || ''}
+            onChange={this.onMetadataSelectorChange}
+            label="Metadata Selector"
+          />
+        </div>
+        <Button size="md" variant="secondary" onClick={this.onConfirm}>
+          Confirm
+        </Button>
+      </div>
     );
   }
 }

@@ -55,11 +55,8 @@ func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDat
 	}
 	instSetting, _ := instance.(*instanceSettings)
 
-	log.DefaultLogger.Info("SETTINGS ", "authServerUrl", instSetting.authServerUrl, "resource", instSetting.resource, "clientId", instSetting.clientId, "clientSecret", instSetting.clientSecret, "contextBrokerUrl", instSetting.contextBrokerUrl)
-
 	//Get token with settings param (url, resource, client_id, client_secret)
 	token := getToken(instSetting)
-	log.DefaultLogger.Info("TOKEN : ", "token", token)
 
 	// loop over queries and execute them individually.
 	for _, q := range req.Queries {
@@ -82,71 +79,180 @@ func (td *SampleDatasource) query(ctx context.Context, query backend.DataQuery, 
 		return response
 	}
 
-	var entity []map[string]json.RawMessage
+	var entity []byte
 	if qm.EntityId != "" {
 		entity = getEntityById(qm.EntityId, qm.Context, token, instSetting)
 	} else {
 		entity = getEntitesByType(qm.EntityType, qm.ValueFilterQuery, qm.Context, token, instSetting)
 	}
 
-	log.DefaultLogger.Info("Query Format ", "request", qm.Format)
 	if qm.Format == "worldmap" {
-		worldMapResponse := transformToWorldMap(qm.EntityId, qm.MapMetric, entity, response)
+		worldMapResponse := transformToWorldMap(qm, entity, response)
 		return worldMapResponse
 	} else {
-		tableResponse := transformToTable(qm.EntityId, entity, response)
+		tableResponse := transformToTable(qm, entity, response)
 		return tableResponse
 	}
-
 }
 
-func transformToTable(EntityId string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+// Return a DataResponse to display data in table view
+//(The dataResponse contains a frame with 5 fields : attributes, metrics, multiAttributeValues, createdAt, modifiedAt)
+func transformToTable(qm queryModel, entitiesByte []byte, response backend.DataResponse) backend.DataResponse {
+	var entityId = qm.EntityId
+	var metadataSelector = qm.MetadataSelector
+	var hasMetadataSelector = metadataSelector != ""
+
 	// create data frame response
-	frame := data.NewFrame(EntityId)
+	frame := data.NewFrame(entityId)
 
 	//Store each value on a slice
-	var attribute []string
-	var value []string
+	var attributes []string
+	var metrics []string
 	var createdAt []string
 	var modifiedAt []string
+	var multiAttributeValues []string
 
-	for _, element := range entity {
-		for k, v := range element {
-			var a Attribute
-			if err := json.Unmarshal(v, &a); err == nil {
+	var entities []interface{}
+	json.Unmarshal(entitiesByte, &entities)
 
-				attribute = append(attribute, k)
+	// Range over entities
+	for entity := 0; entity < len(entities); entity++ {
+		var foundMetadataSelector = false
+		entityInterface := entities[entity].(map[string]interface{})
+		// Range over attributes
+		for k, v := range entityInterface {
+			switch attribute := v.(type) {
 
-				//If attribute is a GeoProperty we set the coordinates as value
-				if a.Type == "GeoProperty" {
-					var location Location
-					err := json.Unmarshal(a.Value, &location)
-					if err == nil {
-						log.DefaultLogger.Info("location ", "request", location.Coordinates)
-						coord := fmt.Sprintf("%f", location.Coordinates)
-						value = append(value, coord)
-					} else {
-						log.DefaultLogger.Warn("error marshalling", "err", err)
+			case string: // Handle case where attribute value is string (id, type, createdAt...)
+			case []interface{}:
+				if k != "@context" {
+					//Range over attributes
+					for _, multiAttribute := range attribute {
+						var propertyInterface = multiAttribute.(map[string]interface{})
+						var currentValue string
+						var currentUnitCode string
+						var currentCreatedAt string
+						var currentModifiedAt string
+						//Range over properties
+						for propertyKey, propertyValue := range propertyInterface {
+							//We get the value if it's a Property or object if it's a Relationship
+							if propertyKey == "value" || propertyKey == "object" {
+								currentValue = fmt.Sprintf("%v", propertyValue)
+							}
+							if propertyKey == "unitCode" {
+								currentUnitCode = fmt.Sprintf("%v", propertyValue)
+							}
+							if propertyKey == "createdAt" {
+								currentCreatedAt = fmt.Sprintf("%v", propertyValue)
+							}
+							if propertyKey == "modifiedAt" {
+								currentModifiedAt = fmt.Sprintf("%v", propertyValue)
+							}
+							//Getting metadataSelector value and unitCode
+							if propertyKey == metadataSelector {
+								foundMetadataSelector = true
+								var metadataSelectorPropertyInterface = propertyValue.(map[string]interface{})
+								var metadataSelectorValueString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["value"])
+								var metadataSelectorUnitCodeString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["unitCode"])
+
+								var multiAttributeValue = buildString("", metadataSelectorValueString, metadataSelectorUnitCodeString, "", "", "")
+								multiAttributeValues = append(multiAttributeValues, multiAttributeValue)
+							}
+						}
+						//If current attribute don't have the metadataSelector
+						if metadataSelector != "" && !foundMetadataSelector {
+							multiAttributeValues = append(multiAttributeValues, "")
+						}
+
+						attributes = append(attributes, k)
+						createdAt = append(createdAt, dateFormat(currentCreatedAt))
+						modifiedAt = append(modifiedAt, dateFormat(currentModifiedAt))
+						metrics = append(metrics, buildString("", currentValue, currentUnitCode, "", "", ""))
 					}
-
-				} else if a.Type == "Property" {
-					value = append(value, strings.Trim(string(a.Value), "\""))
-				} else if a.Type == "Relationship" {
-					value = append(value, string(a.Object))
 				}
 
-				createdAt = append(createdAt, dateFormat(a.CreatedAt))
-				modifiedAt = append(modifiedAt, dateFormat(a.ModifiedAt))
+			case interface{}:
+				var attributeValueInterface = attribute.(map[string]interface{})["value"]
+
+				//If key is "location"
+				if k == "location" {
+					// convert map to json
+					jsonString, _ := json.Marshal(attributeValueInterface)
+					// convert json to struct
+					location := Location{}
+					json.Unmarshal(jsonString, &location)
+
+					coordinates := fmt.Sprintf("%f", location.Coordinates)
+					metrics = append(metrics, coordinates)
+					createdAt = append(createdAt, "")
+					modifiedAt = append(modifiedAt, "")
+
+					if hasMetadataSelector {
+						multiAttributeValues = append(multiAttributeValues, "")
+					}
+
+				} else {
+					var currentValue string
+					var currentUnitCode string
+					var currentCreatedAt string
+					var currentModifiedAt string
+
+					var propertyInterface = attribute.(map[string]interface{})
+					//Getting the property value and unitCode
+					for propertyKey, propertyValue := range propertyInterface {
+						//We get the value if it's a Property or object if it's a Relationship
+						if propertyKey == "value" || propertyKey == "object" {
+							currentValue = fmt.Sprintf("%v", propertyValue)
+						}
+						if propertyKey == "unitCode" {
+							currentUnitCode = fmt.Sprintf("%v", propertyValue)
+						}
+						if propertyKey == "createdAt" {
+							currentCreatedAt = fmt.Sprintf("%v", propertyValue)
+						}
+						if propertyKey == "modifiedAt" {
+							currentModifiedAt = fmt.Sprintf("%v", propertyValue)
+						}
+						//Getting metadataSelector value and unitCode
+						if propertyKey == metadataSelector {
+							foundMetadataSelector = true
+							var metadataSelectorPropertyInterface = propertyValue.(map[string]interface{})
+
+							var metadataSelectorValueString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["value"])
+							var metadataSelectorUnitCodeString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["unitCode"])
+
+							mutltiAttributeValue := buildString("", metadataSelectorValueString, metadataSelectorUnitCodeString, "", "", "")
+							multiAttributeValues = append(multiAttributeValues, mutltiAttributeValue)
+						}
+					}
+					//If current attribute don't have the metadataSelector
+					if metadataSelector != "" && !foundMetadataSelector {
+						multiAttributeValues = append(multiAttributeValues, "")
+					}
+
+					metrics = append(metrics, buildString("", currentValue, currentUnitCode, "", "", ""))
+					createdAt = append(createdAt, dateFormat(currentCreatedAt))
+					modifiedAt = append(modifiedAt, dateFormat(currentModifiedAt))
+				}
+				attributes = append(attributes, k)
+
+			default:
+				log.DefaultLogger.Error(k, "is of a type I don't know how to handle")
 			}
 		}
 	}
 
 	frame.Fields = append(frame.Fields,
-		data.NewField("Attribute", nil, attribute),
+		data.NewField("Attribute", nil, attributes),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("Value ", nil, value),
+		data.NewField("Value ", nil, metrics),
 	)
+	if hasMetadataSelector {
+		frame.Fields = append(frame.Fields,
+			data.NewField(metadataSelector, nil, multiAttributeValues),
+		)
+	}
 	frame.Fields = append(frame.Fields,
 		data.NewField("Created at", nil, createdAt),
 	)
@@ -159,66 +265,207 @@ func transformToTable(EntityId string, entity []map[string]json.RawMessage, resp
 	return response
 }
 
-func transformToWorldMap(EntityId string, MapMetric string, entity []map[string]json.RawMessage, response backend.DataResponse) backend.DataResponse {
+// Return a DataResponse to display data in map view
+//(The dataResponse contains a frame with 5 fields : entitiesId, attributes, metrics, geohash, multiAttributeValues)
+func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.DataResponse) backend.DataResponse {
+	var VALUES_SEPARATOR = ","
+	var entityId = qm.EntityId
+	var metadataSelector = qm.MetadataSelector
+	var mapMetric = qm.MapMetric
+	var hasMetadataSelector = metadataSelector != ""
+
 	// create data frame response
-	frame := data.NewFrame(EntityId)
-
+	frame := data.NewFrame(entityId)
 	//Store each value on a slice
-	var attribute []string
-	var value []string
-	var latitude []string
-	var longitude []string
+	var entitiesId []string
+	var attributes []string
+	var metrics []string
+	var geohash []string
+	var multiAttributeValues []string
 
-	for _, element := range entity {
-		for k, v := range element {
-			var a Attribute
-			if err := json.Unmarshal(v, &a); err == nil {
+	var entities []interface{}
+	json.Unmarshal(entitiesByte, &entities)
 
-				//MapMetric is the attribute that we want to display on the map
-				if MapMetric != "" && MapMetric == k {
-					attribute = append(attribute, MapMetric)
-					value = append(value, string(a.Value))
+	// Range over entities
+	for entity := 0; entity < len(entities); entity++ {
+		entityInterface := entities[entity].(map[string]interface{})
+		var foundAttribute = false
+		var hasLocation = false
+		var foundMetadataSelector = false
+		entityId = fmt.Sprintf("%v", entityInterface["id"])
+
+		// Range over attributes
+		for k, v := range entityInterface {
+			switch attribute := v.(type) {
+
+			case string: // Handle case where attribute value is string (id, type, createdAt...)
+			case []interface{}:
+				//We find the attribute
+				if k == mapMetric {
+					foundAttribute = true
+					var allMultiAttributeValues = ""
+					var currentValue string
+					var currentUnitCode string
+					var currentMetadataSelectorValue string
+					var currentMetadataSelectorUnitCode string
+					//Range over properties
+					for _, multiAttribute := range attribute {
+						var propertyInterface = multiAttribute.(map[string]interface{})
+						//Getting the property value and unitCode
+						for propertyKey, propertyValue := range propertyInterface {
+							//We get the value if it's a Property or object if it's a Relationship
+							if propertyKey == "value" || propertyKey == "object" {
+								currentValue = fmt.Sprintf("%v", propertyValue)
+							}
+							if propertyKey == "unitCode" {
+								currentUnitCode = fmt.Sprintf("%v", propertyValue)
+							}
+							//Getting metadataSelector value and unitCode
+							if propertyKey == metadataSelector {
+								var metadataSelectorPropertyInterface = propertyValue.(map[string]interface{})
+
+								currentMetadataSelectorValue = fmt.Sprintf("%v", metadataSelectorPropertyInterface["value"])
+								currentMetadataSelectorUnitCode = fmt.Sprintf("%v", metadataSelectorPropertyInterface["unitCode"])
+							}
+						}
+						allMultiAttributeValues = buildString(allMultiAttributeValues, currentValue, currentUnitCode, currentMetadataSelectorValue, currentMetadataSelectorUnitCode, VALUES_SEPARATOR)
+					}
+					entitiesId = append(entitiesId, entityId)
+					attributes = append(attributes, mapMetric)
+					firstAttributeValue := strings.Split(allMultiAttributeValues, " ")
+					metrics = append(metrics, firstAttributeValue[0])
+					multiAttributeValues = append(multiAttributeValues, allMultiAttributeValues)
 				}
 
-				if a.Type == "GeoProperty" {
-					var location Location
-					err := json.Unmarshal(a.Value, &location)
-					if err != nil {
-						log.DefaultLogger.Warn("error marshalling", "err", err)
+			case interface{}:
+				//We find the attribute
+				if k == mapMetric {
+					foundAttribute = true
+					var currentValue string
+					var currentUnitCode string
+
+					var propertyInterface = attribute.(map[string]interface{})
+					//Getting the property value and unitCode
+					for propertyKey, propertyValue := range propertyInterface {
+						//We get the value if it's a Property or object if it's a Relationship
+						if propertyKey == "value" || propertyKey == "object" {
+							currentValue = fmt.Sprintf("%v", propertyValue)
+						}
+						if propertyKey == "unitCode" {
+							currentUnitCode = fmt.Sprintf("%v", propertyValue)
+						}
+						//Getting metadataSelector value and unitCode
+						if propertyKey == metadataSelector {
+							foundMetadataSelector = true
+							var metadataSelectorPropertyInterface = propertyValue.(map[string]interface{})
+
+							var metadataSelectorValueString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["value"])
+							var metadataSelectorUnitCodeString = fmt.Sprintf("%v", metadataSelectorPropertyInterface["unitCode"])
+
+							mutltiAttributeValue := buildString("", currentValue, currentUnitCode, metadataSelectorValueString, metadataSelectorUnitCodeString, VALUES_SEPARATOR)
+							multiAttributeValues = append(multiAttributeValues, mutltiAttributeValue)
+						}
+					}
+					//If one attribute don't have the metadataSelector
+					if metadataSelector != "" && !foundMetadataSelector {
+						mutltiAttributeValue := buildString("", currentValue, currentUnitCode, "", "", VALUES_SEPARATOR)
+						multiAttributeValues = append(multiAttributeValues, mutltiAttributeValue)
 					}
 
-					long := fmt.Sprintf("%f", location.Coordinates[0])
-					lat := fmt.Sprintf("%f", location.Coordinates[1])
-
-					longitude = append(longitude, long)
-					latitude = append(latitude, lat)
+					entitiesId = append(entitiesId, entityId)
+					attributes = append(attributes, mapMetric)
+					metrics = append(metrics, currentValue)
 				}
-			}
-			//If no specific attribute has been asked for, we set the entityId and value to 1 to display it anyway
-			if MapMetric == "" && k == "id" {
-				attribute = append(attribute, strings.Trim(string(v), "\""))
-				value = append(value, "1")
-			}
 
+				//If key is "location"
+				if k == "location" {
+					var attributeValueInterface = attribute.(map[string]interface{})["value"]
+					hasLocation = true
+					// convert map to json
+					jsonString, _ := json.Marshal(attributeValueInterface)
+					// convert json to struct
+					location := Location{}
+					json.Unmarshal(jsonString, &location)
+
+					precision := 9
+					hash, _ := Encode(location.Coordinates[1], location.Coordinates[0], precision)
+					geohash = append(geohash, hash)
+				}
+			default:
+				log.DefaultLogger.Info(k, "is of a type I don't know how to handle")
+			}
 		}
-
+		// If we don't have location for an entity, but we already find the desired attribute
+		// We can't display an entity without location, so display nothing for this entity
+		if foundAttribute && !hasLocation {
+			entitiesId = entitiesId[:len(entitiesId)-1]
+			attributes = attributes[:len(attributes)-1]
+			metrics = metrics[:len(metrics)-1]
+			if hasMetadataSelector && foundMetadataSelector {
+				multiAttributeValues = multiAttributeValues[:len(multiAttributeValues)-1]
+			}
+		}
+		//If we have location for an entity but not the desired attribute
+		if hasLocation && !foundAttribute {
+			if mapMetric != "" {
+				geohash = geohash[:len(geohash)-1]
+			} else {
+				//That means user didn't enter MapMetric, but entity has a location. So just display the location
+				entitiesId = append(entitiesId, entityId)
+				attributes = append(attributes, "no metric")
+				metrics = append(metrics, "0")
+			}
+		}
 	}
 
 	frame.Fields = append(frame.Fields,
-		data.NewField("attribute", nil, attribute),
+		data.NewField("id", nil, entitiesId),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("metric", nil, value),
+		data.NewField("attribute", nil, attributes),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("latitude", nil, latitude),
+		data.NewField("metric", nil, metrics),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("longitude", nil, longitude),
+		data.NewField("geohash", nil, geohash),
 	)
+	if hasMetadataSelector {
+		multiAttributeColumnName := mapMetric + " (" + metadataSelector + ")"
+		frame.Fields = append(frame.Fields,
+			data.NewField(multiAttributeColumnName, nil, multiAttributeValues),
+		)
+	}
+
 	// add the frames to the response
 	response.Frames = append(response.Frames, frame)
 	return response
+}
+
+//Build string with or without multiAttribute and unitCode
+//Ex : 10 CEL (20 MTR) / 10 (20 MTR) / 10 CEL (20) / 10 CEL
+func buildString(accumulator string, value string, valueUnitCode string, metadataSelectorValue string, metadataSelectorUnitCode string, VALUES_SEPARATOR string) (buildedString string) {
+	var result string
+	var metadataSelectorBuildString string
+	var valueUnitCodeBuildString = valueUnitCode
+	var metadataSelectorUnitCodeBuildString = metadataSelectorUnitCode
+
+	if valueUnitCodeBuildString != "" {
+		valueUnitCodeBuildString = " " + valueUnitCodeBuildString
+	}
+	if metadataSelectorUnitCodeBuildString != "" {
+		metadataSelectorUnitCodeBuildString = " " + metadataSelectorUnitCodeBuildString
+	}
+	if metadataSelectorValue != "" {
+		metadataSelectorBuildString = " (" + metadataSelectorValue + metadataSelectorUnitCodeBuildString + ")"
+	}
+
+	if accumulator != "" {
+		result = accumulator + VALUES_SEPARATOR + " " + value + valueUnitCodeBuildString + metadataSelectorBuildString
+	} else {
+		result = value + valueUnitCodeBuildString + metadataSelectorBuildString
+	}
+	return result
 }
 
 // CheckHealth handles health checks sent from Grafana to the plugin.
@@ -240,14 +487,12 @@ func newDataSourceInstance(setting backend.DataSourceInstanceSettings) (instance
 	var settings settingsModel
 	err := json.Unmarshal(setting.JSONData, &settings)
 	if err != nil {
-		log.DefaultLogger.Warn("error marshalling", "err", err)
+		log.DefaultLogger.Error("error marshalling", "err", err)
 		return nil, err
 	}
 	//get secure settings (client_secret)
 	var secureData = setting.DecryptedSecureJSONData
 	clientSecret := secureData["clientSecret"]
-
-	//log.DefaultLogger.Info("SETTINGS ", "authServerUrl", settings.AuthServerUrl, "resource", settings.Resource, "clientId", settings.ClientId, "clientSecret", clientSecret, "contextBrokerUrl", settings.ContextBrokerUrl)
 
 	return &instanceSettings{
 		authServerUrl:    settings.AuthServerUrl,

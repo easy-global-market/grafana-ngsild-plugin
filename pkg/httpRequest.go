@@ -49,7 +49,7 @@ func getToken(instSetting *instanceSettings) string {
 
 }
 
-func getEntityById(id string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
+func getEntityById(id string, context string, token string, instSetting *instanceSettings) []byte {
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
@@ -77,22 +77,12 @@ func getEntityById(id string, context string, token string, instSetting *instanc
 		log.DefaultLogger.Warn("err", err)
 		log.DefaultLogger.Info("n:", n)
 	}
-	log.DefaultLogger.Info("response Status:", "request", resp.Status)
-	log.DefaultLogger.Info("buffer :", "request", buf.String())
 
 	//We set the format as a list to have the same format than when you search for entities
-	in := []byte("[" + buf.String() + "]")
-
-	var e []map[string]json.RawMessage
-
-	if err := json.Unmarshal(in, &e); err != nil {
-		log.DefaultLogger.Info("unmarshal json error :", err)
-	}
-
-	return e
+	return []byte("[" + buf.String() + "]")
 }
 
-func getEntitesByType(entityType string, valueFilterQuery string, context string, token string, instSetting *instanceSettings) []map[string]json.RawMessage {
+func getEntitesByType(entityType string, valueFilterQuery string, context string, token string, instSetting *instanceSettings) []byte {
 
 	bToken := "Bearer " + token
 	contextBrokerUrl := instSetting.contextBrokerUrl
@@ -127,15 +117,7 @@ func getEntitesByType(entityType string, valueFilterQuery string, context string
 		log.DefaultLogger.Warn("err", err)
 		log.DefaultLogger.Info("n:", n)
 	}
-	log.DefaultLogger.Info("response Status entitiesByType:", "request", resp.Status)
-	log.DefaultLogger.Info("buffer :", "request", buf.String())
 
-	in := []byte(buf.String())
-	var e []map[string]json.RawMessage
+	return []byte(buf.String())
 
-	if err := json.Unmarshal(in, &e); err != nil {
-		log.DefaultLogger.Info("unmarshal json error entitiesByType :", err)
-	}
-
-	return e
 }

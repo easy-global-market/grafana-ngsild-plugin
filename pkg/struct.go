@@ -1,9 +1,5 @@
 package main
 
-import (
-	"encoding/json"
-)
-
 type Token struct {
 	Access_token       string `json:"access_token"`
 	Expires_in         int    `json:"expires_in"`
@@ -13,13 +9,7 @@ type Token struct {
 	Session_state      string `json:"session_state"`
 	Scope              string `json:"scope"`
 }
-type Attribute struct {
-	Type       string          `json:"type"`
-	CreatedAt  string          `json:"createdAt"`
-	ModifiedAt string          `json:"modifiedAt"`
-	Object     string          `json:"object"`
-	Value      json.RawMessage `json:"value"`
-}
+
 type Location struct {
 	Type        string    `json:"type"`
 	Coordinates []float64 `json:"coordinates"`
@@ -32,6 +22,7 @@ type queryModel struct {
 	Context          string `json:"context"`
 	EntityType       string `json:"entityType"`
 	ValueFilterQuery string `json:"valueFilterQuery"`
+	MetadataSelector string `json:"metadataSelector"`
 }
 
 type instanceSettings struct {
