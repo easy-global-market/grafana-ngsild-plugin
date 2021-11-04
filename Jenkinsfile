@@ -22,13 +22,18 @@ pipeline {
         }
         stage('Archive deliverable') {
             steps {
-                sh 'tar czvf dist.tar.gz dist'
+                script {
+                    if (env.BRANCH_NAME == 'master')
+                        sh 'tar czvf dist-int.tar.gz dist'
+                    else if (env.BRANCH_NAME == 'develop')
+                        sh 'tar czvf dist-dev.tar.gz dist'
+                }
             }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts: 'dist.tar.gz', fingerprint: false
+            archiveArtifacts artifacts: 'dist-*.tar.gz', fingerprint: false
         }
         success {
             slackSend (color: '#36b37e', message: "Success: ${env.BUILD_URL} after ${currentBuild.durationString.replace(' and counting', '')}")
