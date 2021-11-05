@@ -35,16 +35,6 @@ pipeline {
                 }
             }
         }
-        stage('Start Grafana builder job') {
-            steps {
-                script {
-                    if (env.BRANCH_NAME == 'master')
-                        build job: "Grafana builder/master"
-                    else if (env.BRANCH_NAME == 'develop')
-                        build job: "Grafana builder/develop"
-                }
-            }
-        }
     }
     post {
         always {
