@@ -44,8 +44,6 @@ type SampleDatasource struct {
 // The QueryDataResponse contains a map of RefID to the response for each query, and each response
 // contains Frames ([]*Frame).
 func (td *SampleDatasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
-	log.DefaultLogger.Info("QueryData ", "request", req)
-
 	// create response struct
 	response := backend.NewQueryDataResponse()
 
@@ -266,7 +264,7 @@ func transformToTable(qm queryModel, entitiesByte []byte, response backend.DataR
 }
 
 // Return a DataResponse to display data in map view
-//(The dataResponse contains a frame with 5 fields : entitiesId, attributes, metrics, geohash, multiAttributeValues)
+//(The dataResponse contains a frame with 6 fields : entitiesId, attributes, metrics, latitudes, longitudes, multiAttributeValues)
 func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.DataResponse) backend.DataResponse {
 	var VALUES_SEPARATOR = ","
 	var entityId = qm.EntityId
@@ -280,7 +278,8 @@ func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.Da
 	var entitiesId []string
 	var attributes []string
 	var metrics []string
-	var geohash []string
+	var latitudes []float64
+	var longitudes []float64
 	var multiAttributeValues []string
 
 	var entities []interface{}
@@ -387,9 +386,8 @@ func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.Da
 					location := Location{}
 					json.Unmarshal(jsonString, &location)
 
-					precision := 9
-					hash, _ := Encode(location.Coordinates[1], location.Coordinates[0], precision)
-					geohash = append(geohash, hash)
+					latitudes = append(latitudes, location.Coordinates[1])
+					longitudes = append(longitudes, location.Coordinates[0])
 				}
 			default:
 				log.DefaultLogger.Info(k, "is of a type I don't know how to handle")
@@ -408,7 +406,8 @@ func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.Da
 		//If we have location for an entity but not the desired attribute
 		if hasLocation && !foundAttribute {
 			if mapMetric != "" {
-				geohash = geohash[:len(geohash)-1]
+				latitudes = latitudes[:len(latitudes)-1]
+				longitudes = longitudes[:len(longitudes)-1]
 			} else {
 				//That means user didn't enter MapMetric, but entity has a location. So just display the location
 				entitiesId = append(entitiesId, entityId)
@@ -428,7 +427,10 @@ func transformToWorldMap(qm queryModel, entitiesByte []byte, response backend.Da
 		data.NewField("metric", nil, metrics),
 	)
 	frame.Fields = append(frame.Fields,
-		data.NewField("geohash", nil, geohash),
+		data.NewField("latitude", nil, latitudes),
+	)
+	frame.Fields = append(frame.Fields,
+		data.NewField("longitude", nil, longitudes),
 	)
 	if hasMetadataSelector {
 		multiAttributeColumnName := mapMetric + " (" + metadataSelector + ")"
