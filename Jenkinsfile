@@ -22,8 +22,7 @@ pipeline {
         }
         stage('Archive deliverable') {
             steps {
-                    sh 'tar czvf dist.tar.gz dist'
-                }
+                sh 'tar czvf dist.tar.gz dist'
             }
         }
         stage('Start Grafana builder job') {
