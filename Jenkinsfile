@@ -22,7 +22,18 @@ pipeline {
         }
         stage('Archive deliverable') {
             steps {
-                sh 'tar czvf dist.tar.gz dist'
+                    sh 'tar czvf dist.tar.gz dist'
+                }
+            }
+        }
+        stage('Start Grafana builder job') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'master')
+                        build job: "Grafana builder/master"
+                    else if (env.BRANCH_NAME == 'develop')
+                        build job: "Grafana builder/develop"
+                }
             }
         }
     }
