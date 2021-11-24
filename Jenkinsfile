@@ -23,6 +23,7 @@ pipeline {
         stage('Archive deliverable') {
             steps {
                 sh 'tar czvf dist.tar.gz dist'
+                archiveArtifacts artifacts: 'dist.tar.gz', fingerprint: false
             }
         }
         stage('Start Grafana builder job') {
@@ -37,9 +38,6 @@ pipeline {
         }
     }
     post {
-        always {
-            archiveArtifacts artifacts: 'dist.tar.gz', fingerprint: false
-        }
         success {
             slackSend (color: '#36b37e', message: "Success: ${env.BUILD_URL} after ${currentBuild.durationString.replace(' and counting', '')}")
         }
