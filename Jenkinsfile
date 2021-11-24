@@ -29,9 +29,9 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'master')
-                        build job: "GrafanaBuilder/master"
+                        build job: "Grafana%20builder/master"
                     else if (env.BRANCH_NAME == 'develop')
-                        build job: "GrafanaBuilder/develop"
+                        build job: "Grafana%20builder/develop"
                 }
             }
         }
