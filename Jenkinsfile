@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        copyArtifactPermission('Grafana builder')
+        copyArtifactPermission('GrafanaBuilder/*')
     }
     stages {
         stage('Pre Build') {
@@ -30,9 +30,9 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'master')
-                        build job: "Grafana builder/master"
+                        build job: "GrafanaBuilder/master"
                     else if (env.BRANCH_NAME == 'develop')
-                        build job: "Grafana builder/develop"
+                        build job: "GrafanaBuilder/develop"
                 }
             }
         }
