@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        copyArtifactPermission('Grafana builder')
+        copyArtifactPermission('GrafanaBuilder')
     }
     stages {
         stage('Pre Build') {
