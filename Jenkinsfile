@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Pre Build') {
             steps {
-                slackSend (color: '#D4DADF', message: "Started ${env.BUILD_URL}")
+                slackSend (color: '#D4DADF', message: "Starting: Grafana - NGSI-LD plugin on branch ${env.BRANCH_NAME} (<${env.BUILD_URL}|Open>)")
             }
         }
         stage('Build backend') {
@@ -39,10 +39,10 @@ pipeline {
     }
     post {
         success {
-            slackSend (color: '#36b37e', message: "Success: ${env.BUILD_URL} after ${currentBuild.durationString.replace(' and counting', '')}")
+            slackSend (color: '#36b37e', message: "Success: Grafana - NGSI-LD plugin on branch ${env.BRANCH_NAME} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)")
         }
         failure {
-            slackSend (color: '#FF0000', message: "Fail: ${env.BUILD_URL} after ${currentBuild.durationString.replace(' and counting', '')}")
+            slackSend (color: '#FF0000', message: "Fail: Grafana - NGSI-LD plugin on branch ${env.BRANCH_NAME} after ${currentBuild.durationString.replace(' and counting', '')} (<${env.BUILD_URL}|Open>)")
         }
     }
 }
